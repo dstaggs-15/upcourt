@@ -1,4 +1,4 @@
-# Playing Upocourt
+# Playing Upcourt
 
 ## Your first game
 
@@ -119,6 +119,8 @@ Once both rounds finish, undrafted prospects enter free agency, season productio
 
 The local save contains career, settings, custom plays, contest best and the suspended match. It records actor positions, possession, clocks, shot flight, random sequence, fatigue, fouls, box scores and the active play. The save does not depend on an account or server.
 
-The game writes a temporary XML file, flushes it, then atomically replaces the main file while keeping a backup. Invalid main saves trigger backup recovery with a visible notice. Keep a copy of the entire `%LOCALAPPDATA%\Upocourt` folder before manually editing saves.
+The game writes a temporary XML file, flushes it, then atomically replaces the main file while keeping a backup. Invalid main saves trigger backup recovery with a visible notice. Keep a copy of the entire `%LOCALAPPDATA%\Upcourt` folder before manually editing saves.
+
+Existing careers from the first build are automatically recovered when there is no save in the corrected Upcourt folder. Future saves use the corrected folder; the original copy is retained.
 
 Save and Home preserves the current game rather than forfeiting it. Finish it, or use Pause → Sim Rest, before changing the franchise roster, finances or schedule. Completed results are accepted only for the current unplayed fixture. Reopening a final screen cannot award cash or statistics twice.

@@ -1,6 +1,6 @@
 # Source architecture
 
-Upocourt uses C# and Windows Forms with System.Drawing. The build deliberately follows Downfield's dependency-free Windows layout. Production and test entry points are separated by `UPOCOURT_TESTS`; `Tests.cs` is excluded from the playable EXE.
+Upcourt uses C# and Windows Forms with System.Drawing. The build deliberately follows Downfield's dependency-free Windows layout. Production and test entry points are separated by `UPCOURT_TESTS`; `Tests.cs` is excluded from the playable EXE.
 
 | File | Responsibility |
 |---|---|

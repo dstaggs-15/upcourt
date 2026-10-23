@@ -2,9 +2,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-namespace Upocourt  {
+namespace Upcourt  {
     public static class Persistence  {
-        public static string DirectoryPath=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Upocourt");
+        public static readonly string DefaultDirectoryPath=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Upcourt");
+        public static string DirectoryPath=DefaultDirectoryPath;
+        // Compatibility only: locate careers created by the first release.
+        public static string LegacyDirectoryPath=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Upocourt");
         public static string SavePath  {
             get {
                 return Path.Combine(DirectoryPath,"career.xml");
@@ -34,16 +37,20 @@ namespace Upocourt  {
             else File.Move(temp,SavePath);
         }
         public static SaveData Load() {
-            foreach(string path in new[] {
-                SavePath,SavePath+".bak"
+            LoadNotice="";
+            var paths=new System.Collections.Generic.List<string>{SavePath,SavePath+".bak"};
+            if(DirectoryPath==DefaultDirectoryPath&&!File.Exists(SavePath)&&!File.Exists(SavePath+".bak")) {
+                paths.Add(Path.Combine(LegacyDirectoryPath,"career.xml"));
+                paths.Add(Path.Combine(LegacyDirectoryPath,"career.xml.bak"));
             }
-            ) {
+            foreach(string path in paths) {
                 if(!File.Exists(path))continue;
                 try {
                     SaveData d;
                     using(var stream=File.OpenRead(path))d=(SaveData)new XmlSerializer(typeof(SaveData)).Deserialize(stream);
                     Validate(d);
                     if(path.EndsWith(".bak"))LoadNotice="Recovered backup save. The original file was unreadable.";
+                    if(Path.GetDirectoryName(path)!=DirectoryPath)LoadNotice="Recovered your existing career. Future saves use the Upcourt folder.";
                     return d;
                 }
                 catch(Exception e) {

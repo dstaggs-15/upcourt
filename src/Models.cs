@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace Upocourt  {
+namespace Upcourt  {
     public static class Util  {
         public static float Clamp(float n,float a,float b) {
             return Math.Max(a,Math.Min(b,n));

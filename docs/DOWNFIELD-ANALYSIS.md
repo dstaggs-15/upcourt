@@ -1,4 +1,4 @@
-# Downfield analysis and the Upocourt adaptation
+# Downfield analysis and the Upcourt adaptation
 
 ## Scope and identity
 
@@ -44,7 +44,7 @@ The native Windows build invokes the installed .NET Framework C# compiler direct
 
 ## Basketball translation
 
-| Downfield foundation | Upocourt implementation |
+| Downfield foundation | Upcourt implementation |
 |---|---|
 | Native WinForms / procedural art | Same native stack; original font, adapted player sprites, matching canvas/palette |
 | Offense-only football | Playable five-on-five offense and defense |
@@ -66,7 +66,7 @@ The native Windows build invokes the installed .NET Framework C# compiler direct
 | Coach, business and history | Coach W/L/titles, jobs, owner confidence, tickets, fans, relocation and archived awards |
 | Auto-saved career, no live resumption | Atomic backed-up career saves **including live matches** |
 
-Upocourt is a basketball adaptation, not a football source fork with text substitutions. Football mechanics are not carried into the match engine. Art/font reuse is intentional; ball physics, court rules, playoff series and roster models are basketball-specific code.
+Upcourt is a basketball adaptation, not a football source fork with text substitutions. Football mechanics are not carried into the match engine. Art/font reuse is intentional; ball physics, court rules, playoff series and roster models are basketball-specific code.
 
 ## Invariants preserved and strengthened
 
@@ -87,6 +87,6 @@ The implementation was compiled on Windows with the installed compiler. Automate
 
 REA's Windows PTY capture adapter explicitly reported `capability_unavailable`: it cannot verify descendant cleanup on native Windows. No installation or platform reconfiguration was attempted. Runtime tests therefore ran through the normal Windows executor, not a successful REA process capture. This limit is retained separately from successful REA static inspection.
 
-The original shipped Downfield EXE was not inspected or run; the local rebuilt assembly was inspected statically. Hardware controller feel and audio output were not physically evaluated. Upocourt intentionally uses an arcade boundary model and a separate accelerated possession simulator. It has no online or local-versus mode, no football Bowling, and no claim to implement every professional basketball rule. These are explicit product boundaries, not negative findings inferred from missing strings.
+The original shipped Downfield EXE was not inspected or run; the local rebuilt assembly was inspected statically. Hardware controller feel and audio output were not physically evaluated. Upcourt intentionally uses an arcade boundary model and a separate accelerated possession simulator. It has no online or local-versus mode, no football Bowling, and no claim to implement every professional basketball rule. These are explicit product boundaries, not negative findings inferred from missing strings.
 
 The original investigation questions—architecture, art identity, live-game structure, franchise progression, persistence, input, distribution and basketball mapping—are answered by the retrieved sources and implementation. Verification of the identity/behavior of the shipped original binary remains unresolved because binary retrieval was unavailable.

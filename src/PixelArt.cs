@@ -1,7 +1,7 @@
 using System;
 using System.Drawing;
 using System.Collections.Generic;
-namespace Upocourt  {
+namespace Upcourt  {
     public static class PixelFont  {
         static readonly Dictionary<char,string> Glyphs=new Dictionary<char,string>();
         static PixelFont() {

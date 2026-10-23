@@ -1,4 +1,4 @@
-Upocourt basketball implementation, Copyright (c) 2026.
+Upcourt basketball implementation, Copyright (c) 2026.
 Original Downfield pixel font and procedural player artwork retained/adapted below.
 
 Downfield original source code, procedural artwork and synthesized sounds

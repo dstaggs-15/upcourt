@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Xml.Serialization;
 using System.IO;
-namespace Upocourt  {
+namespace Upcourt  {
     public partial class GameForm  {
         Play editPlay;
         int editSlot,editSource=-1;

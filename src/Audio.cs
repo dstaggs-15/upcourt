@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Media;
-namespace Upocourt  {
+namespace Upcourt  {
     public class Audio:IDisposable  {
         SoundPlayer player;
         MemoryStream stream;

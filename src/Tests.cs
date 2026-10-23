@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Windows.Forms;
-namespace Upocourt  {
-#if UPOCOURT_TESTS
+namespace Upcourt  {
+#if UPCOURT_TESTS
     public static class Tests  {
         static int assertions,failures;
         static void Check(bool condition,string name) {
@@ -37,7 +37,7 @@ namespace Upocourt  {
         }
         public static int Run() {
             assertions=failures=0;
-            string root=Path.Combine(Path.GetTempPath(),"Upocourt-tests-"+Guid.NewGuid().ToString("N"));
+            string root=Path.Combine(Path.GetTempPath(),"Upcourt-tests-"+Guid.NewGuid().ToString("N"));
             Persistence.DirectoryPath=root;
             Test("league identities, schedule and lineup",()=> {
                 League l=League.Create(0);Check(l.Clubs.Count==12&&l.Players.Count==174,"12 clubs and independent players");Check(l.Players.Select(p=>p.Id).Distinct().Count()==l.Players.Count,"stable unique IDs");Check(l.Games.Count==132,"22 rounds x six fixtures");for(int t=0;t<12;t++) {
@@ -106,7 +106,7 @@ namespace Upocourt  {
             }
             );
             Test("controller dead zone and stock play library",()=> {
-                Check(Input.Axis(1000)==0&&Input.Axis(-32768)<-.99f,"controller deadzone and range");Check(Play.Builtins().Count==24&&Play.Builtins().All(p=>p.Routes.Count==5),"24 five-player plays");Check(PixelFont.Width("UPOCOURT",16)==96,"original pixel font metrics");
+                Check(Input.Axis(1000)==0&&Input.Axis(-32768)<-.99f,"controller deadzone and range");Check(Play.Builtins().Count==24&&Play.Builtins().All(p=>p.Routes.Count==5),"24 five-player plays");Check(PixelFont.Width("UPCOURT",16)==84,"original pixel font metrics");
             }
             );
             Console.WriteLine(assertions+" assertions / "+failures+" failures");
@@ -114,7 +114,7 @@ namespace Upocourt  {
         }
         public static int Ui() {
             int errors=0;
-            Persistence.DirectoryPath=Path.Combine(Path.GetTempPath(),"Upocourt-ui-"+Guid.NewGuid().ToString("N"));
+            Persistence.DirectoryPath=Path.Combine(Path.GetTempPath(),"Upcourt-ui-"+Guid.NewGuid().ToString("N"));
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             using(GameForm form=new GameForm()) {

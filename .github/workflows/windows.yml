@@ -12,11 +12,11 @@ jobs:
         run: .\build.ps1
       - name: Render menus
         shell: powershell
-        run: .\build\Upocourt.Tests.exe --ui-test
+        run: .\build\Upcourt.Tests.exe --ui-test
       - name: Package and verify installer
         shell: powershell
         run: .\build-installer.ps1
       - uses: actions/upload-artifact@v4
         with:
-          name: Upocourt-Windows
+          name: Upcourt-Windows
           path: play me/*

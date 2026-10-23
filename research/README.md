@@ -8,10 +8,10 @@ The inspected `Downfield.SourceReview.exe` is a **local source build**, not a do
 |---|---|---|
 | `downfield-managed-summary.json` | `inspect_managed_artifact` summary | `ev_29ca52adf9906e70f65c3d03fd286a6ca5063b17008d23c4c64f6e34fb2288ed` |
 | `downfield-members-summary.json` | `inspect_managed_members` summary for Simulation, Franchise, Input, GameForm | `ev_89140811fbcdf4f219bbe24da5bc292fc6303e299cd756d53f0bbc13d3aed72b` |
-| `windows-process-capture-limit.json` | Requested Upocourt test process capture | Explicit unsupported Windows PTY capability; no successful runtime capture |
+| `windows-process-capture-limit.json` | Requested Upcourt test process capture | Explicit unsupported Windows PTY capability; no successful runtime capture |
 
 The summary records retain their parent evidence IDs and original limitations. Static inspection did not load, execute or decompile the original target. Counts of records describe the selected metadata view, not a complete behavioral investigation. Although REA labels file-backed artifact evidence with its `shipped-artifact` authority vocabulary, the actual artifact provenance here is explicitly a local source build.
 
-Runtime Upocourt tests, UI rendering and installer verification were performed using the normal Windows executor. They must not be represented as successful REA PTY captures. The original download limitation and the unsupported Windows process-capture adapter were not repaired by installing or reconfiguring tools.
+Runtime Upcourt tests, UI rendering and installer verification were performed using the normal Windows executor. They must not be represented as successful REA PTY captures. The original download limitation and the unsupported Windows process-capture adapter were not repaired by installing or reconfiguring tools.
 
 The [analysis report](../docs/DOWNFIELD-ANALYSIS.md) separates source observations, REA observations, design choices and remaining unknowns.

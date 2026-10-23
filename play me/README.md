@@ -1,16 +1,16 @@
-# Upocourt
+# Upcourt
 
 A native Windows arcade basketball game built from the design of [Downfield](https://github.com/dstaggs-15/downfieldftbl). Quick five-on-five games on the court, a team to build across seasons, and **the same procedural pixel art style**.
 
-Upocourt reuses Downfield's original pixel font, 24×30 player geometry, outline and skin colors, uniform palette, running animation, navy panels, cream lettering, gold highlights, crowd construction and 640×400 nearest-neighbor rendering. Basketball adds bare heads, sleeveless uniforms, hardwood, hoops and ball animation to that foundation.
+Upcourt reuses Downfield's original pixel font, 24×30 player geometry, outline and skin colors, uniform palette, running animation, navy panels, cream lettering, gold highlights, crowd construction and 640×400 nearest-neighbor rendering. Basketball adds bare heads, sleeveless uniforms, hardwood, hoops and ball animation to that foundation.
 
 ## Just want to play?
 
-**[Download the Windows installer](https://github.com/dstaggs-15/upcourt/raw/refs/heads/main/play%20me/Install%20Upocourt.exe)**
+**[Download the Windows installer](https://github.com/dstaggs-15/upcourt/raw/refs/heads/main/play%20me/Install%20Upcourt.exe)**
 
-Open it and click **INSTALL GAME**. It installs the game for your Windows account and creates an Upocourt desktop shortcut. No administrator access or additional game downloads are needed.
+Open it and click **INSTALL GAME**. It installs the game for your Windows account and creates an Upcourt desktop shortcut. No administrator access or additional game downloads are needed.
 
-Or get the **[portable EXE](https://github.com/dstaggs-15/upcourt/raw/refs/heads/main/play%20me/Upocourt.exe)** or **[Windows ZIP](https://github.com/dstaggs-15/upcourt/raw/refs/heads/main/play%20me/Upocourt-Windows.zip)**. The ZIP includes the game, installer and launcher. Requires **64-bit Windows 10/11 with .NET Framework 4.8**. The executables are unsigned.
+Or get the **[portable EXE](https://github.com/dstaggs-15/upcourt/raw/refs/heads/main/play%20me/Upcourt.exe)** or **[Windows ZIP](https://github.com/dstaggs-15/upcourt/raw/refs/heads/main/play%20me/Upcourt-Windows.zip)**. The ZIP includes the game, installer and launcher. Requires **64-bit Windows 10/11 with .NET Framework 4.8**. The executables are unsigned.
 
 ![Pick a mode](docs/menu.png)
 
@@ -77,7 +77,7 @@ Menus support mouse clicks, arrows/Enter/Escape and D-pad/A/B. Page through long
 
 ## Saves
 
-Saves live in `%LOCALAPPDATA%\Upocourt\career.xml`. The game writes atomically and retains `career.xml.bak` for recovery. Live matches save every 15 seconds, on pause-menu **Save and Home**, and when the window closes.
+Saves live in `%LOCALAPPDATA%\Upcourt\career.xml`. The game writes atomically and retains `career.xml.bak` for recovery. Live matches save every 15 seconds, on pause-menu **Save and Home**, and when the window closes.
 
 Choose **Resume Match** to continue the exact saved ball flight, clock, roster, fatigue and possession. An unfinished match blocks league transactions and replacement games until you finish or simulate it. A result can count only once.
 
@@ -87,13 +87,13 @@ No Unity, Unreal, NuGet packages or JavaScript build step. On Windows, open Powe
 
 ```powershell
 .\build.ps1
-.\build\Upocourt.exe
+.\build\Upcourt.exe
 ```
 
 The script builds the game and a separate test executable, then runs the engine tests. More checks:
 
 ```powershell
-.\build\Upocourt.Tests.exe --ui-test
+.\build\Upcourt.Tests.exe --ui-test
 .\build-installer.ps1
 .\verify-release.ps1
 ```

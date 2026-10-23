@@ -6,7 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
-namespace Upocourt  {
+namespace Upcourt  {
     public class Choice  {
         public string Title,Detail;
         public Action Run;
@@ -42,7 +42,7 @@ namespace Upocourt  {
             league=data.League;
             game=data.Match;
             notice=Persistence.LoadNotice;
-            Text="UPOCOURT | Pixel Basketball";
+            Text="UPCOURT | Pixel Basketball";
             ClientSize=new Size(1280,800);
             MinimumSize=new Size(960,600);
             BackColor=Ink;
@@ -126,7 +126,7 @@ namespace Upocourt  {
             }
             catch(Exception e) {
                 notice="SAVE FAILED: "+e.Message;
-                if(closing)MessageBox.Show(notice,"Upocourt");
+                if(closing)MessageBox.Show(notice,"Upcourt");
             }
         }
         void Open(string next) {
@@ -712,7 +712,7 @@ namespace Upocourt  {
                 );
                 Add("KEYBOARD BINDINGS","CONFLICTING KEYS SWAP",()=>Open("controls"));
                 Add("FULLSCREEN","F11 ALSO TOGGLES",()=>ToggleFull());
-                Add("CREDITS / LICENSE","DOWNFIELD ART / MIT SOURCE",()=>{using(var stream=typeof(GameForm).Assembly.GetManifestResourceStream("Upocourt.License"))using(var reader=new System.IO.StreamReader(stream))MessageBox.Show(reader.ReadToEnd(),"Upocourt / License");});
+                Add("CREDITS / LICENSE","DOWNFIELD ART / MIT SOURCE",()=>{using(var stream=typeof(GameForm).Assembly.GetManifestResourceStream("Upcourt.License"))using(var reader=new System.IO.StreamReader(stream))MessageBox.Show(reader.ReadToEnd(),"Upcourt / License");});
             }
             else if(screen=="controls") {
                 for(int i=0;i<Settings.Actions.Length;i++) {

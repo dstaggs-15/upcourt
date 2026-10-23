@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-namespace Upocourt  {
+namespace Upcourt  {
     public class Input  {
         [StructLayout(LayoutKind.Sequential)]struct Pad {
             public ushort Buttons;

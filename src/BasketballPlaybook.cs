@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-namespace Upocourt  {
+namespace Upcourt  {
     public static class BasketballPlaybook  {
         public static List<Play> Create() {
             string[] names= {

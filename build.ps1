@@ -6,10 +6,10 @@ $output = Join-Path $projectRoot 'build'
 New-Item -ItemType Directory -Force -Path $output | Out-Null
 $sources = Get-ChildItem -LiteralPath (Join-Path $projectRoot 'src') -Filter '*.cs' | Select-Object -ExpandProperty FullName
 $gameSources = $sources | Where-Object { !(Split-Path -Leaf $_).EndsWith('Tests.cs') }
-& $compiler /nologo /optimize+ /target:winexe /platform:x64 /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Core.dll "/resource:$projectRoot\LICENSE.txt,Upocourt.License" /out:"$output\Upocourt.exe" $gameSources
+& $compiler /nologo /optimize+ /target:winexe /platform:x64 /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Core.dll "/resource:$projectRoot\LICENSE.txt,Upcourt.License" /out:"$output\Upcourt.exe" $gameSources
 if ($LASTEXITCODE -ne 0) { throw 'Game build failed.' }
-& $compiler /nologo /optimize+ /define:UPOCOURT_TESTS /target:exe /platform:x64 /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Core.dll "/resource:$projectRoot\LICENSE.txt,Upocourt.License" /out:"$output\Upocourt.Tests.exe" $sources
+& $compiler /nologo /optimize+ /define:UPCOURT_TESTS /target:exe /platform:x64 /r:System.Drawing.dll /r:System.Windows.Forms.dll /r:System.Core.dll "/resource:$projectRoot\LICENSE.txt,Upcourt.License" /out:"$output\Upcourt.Tests.exe" $sources
 if ($LASTEXITCODE -ne 0) { throw 'Test build failed.' }
-& "$output\Upocourt.Tests.exe" --test
+& "$output\Upcourt.Tests.exe" --test
 if ($LASTEXITCODE -ne 0) { throw 'Tests failed.' }
-Write-Host "Built $output\Upocourt.exe"
+Write-Host "Built $output\Upcourt.exe"

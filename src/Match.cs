@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace Upocourt  {
+namespace Upcourt  {
     public class Actor  {
         public Athlete Data=new Athlete();
         public Stats Box=new Stats();

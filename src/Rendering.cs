@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-namespace Upocourt  {
+namespace Upcourt  {
     public partial class GameForm  {
         void Rect(float x,float y,float w,float h,Color c) {
             using(var b=new SolidBrush(c))g.FillRectangle(b,(float)Math.Round(x),(float)Math.Round(y),w,h);
@@ -70,7 +70,7 @@ namespace Upocourt  {
         void DrawHome() {
             BuildMenu();
             Rect(0,0,1280,7,Gold);
-            TextAt("UPOCOURT",40,44,56,White);
+            TextAt("UPCOURT",40,44,56,White);
             TextAt("PICK YOUR GAME",44,141,16,Mint);
             for(int n=0;n<3;n++) {
                 int ix=n;
@@ -117,7 +117,7 @@ namespace Upocourt  {
         }
         void DrawMenu() {
             Rect(0,0,1280,7,Gold);
-            TextAt("UPOCOURT",36,27,28,White);
+            TextAt("UPCOURT",36,27,28,White);
             TextAt(screen.Replace("trade","TRADE ").ToUpperInvariant(),36,91,20,Mint);
             if(league!=null)TextAt(Clip(league.Team.Name+" / "+league.Stage+" / $"+league.Team.Cash+"M / CAP "+(League.Cap-league.Payroll(league.UserTeam))+"M",75),36,137,12,Muted);
             int first=selected/8*8;
@@ -241,12 +241,12 @@ namespace Upocourt  {
             }
             Rect(452,120,376,96,Ink);
             Rect(458,126,364,7,Gold);
-            TextAt("UPOCOURT ARENA",482,141,12,Gold);
+            TextAt("UPCOURT ARENA",482,141,12,Gold);
             TextAt(game.HomeScore.ToString("00"),489,165,30,White);
             TextAt("VS",624,173,12,Muted);
             TextAt(game.AwayScore.ToString("00"),727,165,30,White);
             Rect(0,266,1280,18,Ink);
-            for(int i=0;i<5;i++)TextAt(i%2==0?"UPOCOURT":Clip(game.HomeName,20),i*256+12,269,10,i%2==0?Gold:Mint);
+            for(int i=0;i<5;i++)TextAt(i%2==0?"UPCOURT":Clip(game.HomeName,20),i*256+12,269,10,i%2==0?Gold:Mint);
             Quad(-5,-7,99,57,Color.FromArgb(72,71,76));
             Quad(0,-2,94,52,Color.FromArgb(255,Color.FromArgb(game.HomeColor)));
             for(int x=0;x<94;x+=4)Quad(x,0,Math.Min(94,x+4),50,(x/4)%2==0?Color.FromArgb(160,111,66):Color.FromArgb(171,121,75));

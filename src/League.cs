@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace Upocourt  {
+namespace Upcourt  {
     public class League  {
         public const int Cap=140,MaxRoster=15;
         public int Version=1,UserTeam,Season=1,Round,NextId=1,NextFixture=1,TrainingRound=-1,CoachWins,CoachLosses,Titles,DraftIndex;
