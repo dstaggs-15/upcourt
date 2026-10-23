@@ -6,17 +6,20 @@ Upcourt uses C# and Windows Forms with System.Drawing. The build deliberately fo
 |---|---|
 | `Models.cs` | Persistent DTOs: skills, contracts, statistics, clubs, fixtures, series, drafts, plays and settings |
 | `Match.cs` | Basketball state transitions, input actions, player movement, timing, rules, AI, substitutions and accelerated simulation |
+| `Arcade.cs` | Jump height, spins, step-backs, cuts, alley-oop chains, power dunks, heat, knockback, referee visibility and flagrant/ejection accounting |
+| `CourtCamera.cs` | Smooth world-space ball/velocity tracking, perspective relative to camera position and shot zoom |
 | `BasketballPlaybook.cs` | Twenty-four named five-player route layouts |
 | `League.cs` | Schedule, caps, transactions, development, CPU clubs, results, business, postseason, careers and offseason |
 | `Persistence.cs` | Schema checks, XML serialization, atomic replacement and backup recovery |
 | `Input.cs` | Keyboard edge state and XInput fallback/dead-zone polling |
-| `Audio.cs` | In-memory WAV generation and sound playback |
+| `Audio.cs`, `StadiumMixer.cs`, `ArcadeSounds.cs`, `WaveOutput.cs` | One continuous stereo PCM stream with synthesized crowd bed, overlapping reactions/effects and Downfield's adapted native Windows output buffers |
 | `GameForm.cs` | Mode/navigation orchestration, action menus, settings, input routing and save cadence |
 | `Rendering.cs` | Logical 1280×800 pixel scenes on a 640×400 backing frame; perspective arena, HUD and menus |
 | `PixelArt.cs` | Original Downfield glyphs and basketball adaptation of its procedural sprite renderer |
 | `PlayDesigner.cs` | Five-position route editor, custom play lifecycle and immediate use |
 | `Program.cs` | Native game entry point and test-only commands |
 | `Tests.cs` | Engine, league, persistence and UI integration checks |
+| `ArcadeTests.cs` | Moving camera, moves/finishes, steals/blocks, both referee outcomes, ejection substitutions, compatibility and offline stereo-mixer checks |
 | `installer/Installer.cs` | Per-user payload installer and desktop shortcut |
 
 ## Match lifecycle
@@ -26,6 +29,14 @@ Upcourt uses C# and Windows Forms with System.Drawing. The build deliberately fo
 `Match.Update` advances one bounded time step. Ball and game state live in serializable fields rather than opaque runtime handles. The random generator is reconstructed from a seed and call count for each roll, making a save/reload preserve subsequent draws without trying to serialize `System.Random` internals.
 
 The live phases are inbound, live, pass, shot, loose, freethrow, break and final. Ball flight can survive the period horn. Free-throw completion precedes period transitions. Made baskets, turnovers and rebounds establish the next possession with the appropriate shot-clock reset.
+
+Arcade state is part of the saved match and actors: jump/stun/action timers, move cooldowns, flagrant counts, ejections, heat/fire/combo arrays, referee position, called cuts, alley target and retained penalty possession. Transient sound events are excluded from XML to prevent replaying old sounds after resume. Old fifteen-key control arrays expand to the new defaults while retaining all existing customized keys.
+
+An airborne shot retains its originating height and ends at rim height. Non-shot loose balls are marked separately so a punch-induced fumble does not create a fictional rebound. A caught punch uses the ordinary free-throw scoring path, then explicitly retains the victim's possession. Ejected actors are excluded from automatic lineup, bench rotation and simulated selection.
+
+The camera works in court coordinates and applies the same projection to floor lines, hoops, actors, ball and shadows. It smooths toward the ball with a small velocity lead and adjusts zoom for airborne shots. Screen UI and crowd rows stay fixed. Court rendering is clipped to the play viewport; big-hit shake affects world geometry without shaking menus or scores.
+
+The mixer combines ambience and short voices under a lock, renders bounded stereo PCM and feeds three reusable native Windows buffers on a background thread. Effects never replace the crowd bed. Master/crowd/effects gains are separate; focus loss silences output and pause ducks ambience. The crowd is synthesized rather than copied from Downfield's recorded football assets.
 
 When a match ends, the form invokes `League.Finish` only if a league fixture exists. That method verifies identity/current round/unplayed state/untied final, settles the user fixture and simulates the other fixtures, then advances the league. `Match.ResultCommitted` also prevents repeated UI-side submission. The league's fixture guard remains the authoritative duplicate-result protection.
 

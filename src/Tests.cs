@@ -109,6 +109,7 @@ namespace Upcourt  {
                 Check(Input.Axis(1000)==0&&Input.Axis(-32768)<-.99f,"controller deadzone and range");Check(Play.Builtins().Count==24&&Play.Builtins().All(p=>p.Routes.Count==5),"24 five-player plays");Check(PixelFont.Width("UPCOURT",16)==84,"original pixel font metrics");
             }
             );
+            Test("hyper arcade, follow camera, penalties, saves and stereo crowd",()=>ArcadeTests.Run(Check));
             Console.WriteLine(assertions+" assertions / "+failures+" failures");
             return failures==0?0:1;
         }
@@ -139,9 +140,16 @@ namespace Upcourt  {
                         Console.WriteLine("FAIL: UI "+screen+" / "+e);
                     }
                 }
-                errors+=UiFlow(form,flags);
+                errors+=UiFlow(form,flags);errors+=ArcadeUiFlow(form,flags);
             }
             return errors;
+        }
+        static int ArcadeUiFlow(GameForm form,BindingFlags flags) {
+            try{Type type=typeof(GameForm);type.GetMethod("Start",flags).Invoke(form,new object[]{false,true,false});Match m=(Match)type.GetField("game",flags).GetValue(form);Input controls=(Input)type.GetField("input",flags).GetValue(form);m.Phase="live";m.User.X=63;m.User.Y=25;m.BallX=63;m.BallY=25;
+                Action<Keys> press=key=>{controls.Clear();controls.HeldKeys.Add(key);var watch=(System.Diagnostics.Stopwatch)type.GetField("watch",flags).GetValue(form);type.GetField("last",flags).SetValue(form,watch.Elapsed.TotalSeconds-.02);type.GetMethod("Tick",flags).Invoke(form,null);controls.HeldKeys.Remove(key);};
+                press(Keys.J);if(m.User.JumpTime<=0)throw new Exception("jump binding did not jump");m.User.MoveCooldown=0;m.User.Action=0;float x=m.User.X;press(Keys.G);if(m.User.X<=x)throw new Exception("spin binding did not advance");m.User.MoveCooldown=0;m.User.Action=0;x=m.User.X;press(Keys.H);if(m.User.X>=x)throw new Exception("stepback binding did not move back");press(Keys.C);if(m.CutTarget<0)throw new Exception("cut binding did not select runner");press(Keys.K);if(m.User.PunchCooldown<=0)throw new Exception("punch binding did not swing");m.User.X=85;m.User.Y=25;m.User.StunTime=0;press(Keys.V);if(!m.ShotWasDunk||m.Phase!="shot")throw new Exception("finish binding did not dunk");
+                Console.WriteLine("PASS: UI jump -> spin -> stepback -> cut -> punch -> dunk bindings");return 0;
+            }catch(Exception e){Console.WriteLine("FAIL: UI arcade controls / "+e);return 1;}
         }
         static int UiFlow(GameForm form,BindingFlags flags) {
             try {

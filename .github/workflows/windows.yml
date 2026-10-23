@@ -16,6 +16,9 @@ jobs:
       - name: Package and verify installer
         shell: powershell
         run: .\build-installer.ps1
+      - name: Verify portable and packaged release
+        shell: powershell
+        run: .\verify-release.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: Upcourt-Windows

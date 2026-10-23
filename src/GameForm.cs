@@ -21,6 +21,7 @@ namespace Upcourt  {
         readonly Timer timer=new Timer();
         readonly Stopwatch watch=new Stopwatch();
         readonly Audio audio=new Audio();
+        readonly CourtCamera camera=new CourtCamera();Match cameraMatch;float nextBounce,nextSqueak;
         readonly Bitmap frame=new Bitmap(640,400);
         SaveData data;
         League league;
@@ -37,7 +38,7 @@ namespace Upcourt  {
         static readonly Color Ink=Color.FromArgb(24,27,46),Muted=Color.FromArgb(155,170,162),White=Color.FromArgb(246,235,203),Mint=Color.FromArgb(117,220,162),Gold=Color.FromArgb(247,195,85),Blue=Color.FromArgb(50,150,202),Red=Color.FromArgb(215,74,79),PanelColor=Color.FromArgb(39,46,61);
         public GameForm() {
             data=Persistence.Load();
-            audio.Volume=data.Settings.Volume;
+            audio.Volume=data.Settings.Volume;audio.CrowdVolume=data.Settings.CrowdVolume;audio.EffectsVolume=data.Settings.EffectsVolume;
             audio.Muted=data.Settings.Muted;
             league=data.League;
             game=data.Match;
@@ -199,6 +200,7 @@ namespace Upcourt  {
             last=watch.Elapsed.TotalSeconds;
             time+=dt;
             input.Poll();
+            audio.SetContext(game!=null&&(screen=="game"||screen=="pause")&&(!game.Practice||game.Contest),ContainsFocus,screen=="pause");
             if(typed!=null||binding>=0) {
                 input.EndFrame();
                 Invalidate();
@@ -226,17 +228,22 @@ namespace Upcourt  {
                     float mx=input.MX+(input.Action(s,3)?1:0)-(input.Action(s,2)?1:0),my=input.MY+(input.Action(s,1)?1:0)-(input.Action(s,0)?1:0);
                     bool offense=game.UserSide==game.Possession;
                     if(input.ActionPress(s,4)||input.Press(Input.X)) {
-                        if(offense||game.Phase=="freethrow")game.StartShot();
+                        if(offense&&input.Trick)game.DunkOrLob();
+                        else if(offense||game.Phase=="freethrow")game.StartShot();
                         else game.Block();
                     }
                     if(input.ActionRelease(s,4)||input.Release(Input.X))game.ReleaseShot();
                     if(input.ActionPress(s,5)||input.Press(Input.A)) {
-                        if(offense)game.Pass(-1,input.Key(Keys.ControlKey)||input.Hold(Input.LB));
+                        if(offense&&input.Trick)game.CallCut();
+                        else if(offense)game.Pass(-1,input.Key(Keys.ControlKey)||input.Hold(Input.LB));
                         else game.Steal();
                     }
-                    if(input.ActionPress(s,6)||input.Press(Input.B))game.SwitchNearest();
-                    if(input.ActionPress(s,7)||input.Press(Input.Y))game.Skill();
-                    if(input.ActionPress(s,8)||input.Press(Input.RB))game.Screen();
+                    if(input.ActionPress(s,6)||input.Press(Input.B)){if(input.Trick)game.StepBack();else game.SwitchNearest();}
+                    if(input.ActionPress(s,7)||input.Press(Input.Y)){if(input.Trick)game.Spin();else game.Skill();}
+                    if(input.ActionPress(s,8)||input.Press(Input.RB)){if(input.Trick)game.Punch();else game.Screen();}
+                    if(input.ActionPress(s,15)||input.Press(Input.LB)&&!input.Hold(Input.A))game.Jump();
+                    if(input.ActionPress(s,16))game.Spin();if(input.ActionPress(s,17))game.StepBack();
+                    if(input.ActionPress(s,18))game.DunkOrLob();if(input.ActionPress(s,19))game.Punch();if(input.ActionPress(s,20))game.CallCut();
                     for(int n=0;n<5;n++)if(input.ActionPress(s,9+n))game.Pass(n,input.Key(Keys.ControlKey));
                     if(input.ActionPress(s,14)) {
                         Open("calls");
@@ -246,8 +253,11 @@ namespace Upcourt  {
                     int before=game.HomeScore+game.AwayScore;
                     string prior=game.Message;
                     game.Update(dt,-my,mx,input.Sprint);
-                    if(game.HomeScore+game.AwayScore>before)audio.Cue("score");
-                    else if(game.Message!=prior&&game.Message.Contains("PERIOD"))audio.Cue("buzzer");
+                    if(cameraMatch!=game){camera.Initialized=false;cameraMatch=game;}camera.Follow(game,dt);
+                    while(game.Sounds.Count>0)audio.Cue(game.Sounds.Dequeue());
+                    if(game.Phase=="live"&&game.BallOwner!=null&&game.BallOwner.JumpTime<=0&&time>nextBounce){audio.Cue("bounce");nextBounce=time+.38f;}
+                    if(game.User!=null&&Math.Abs(game.User.VX)+Math.Abs(game.User.VY)>12&&time>nextSqueak){audio.Cue("squeak");nextSqueak=time+.7f;}
+                    if(game.Message!=prior&&(game.Message.Contains("PERIOD")||game.Message.Contains("HALFTIME")||game.Over))audio.Cue("buzzer");
                     if(game.Over)Complete();
                     if(time-saveAt>15) {
                         Save();
@@ -710,6 +720,8 @@ namespace Upcourt  {
                     s.Volume=(s.Volume+20)%120;audio.Volume=s.Volume;Save();
                 }
                 );
+                Add("CROWD / "+s.CrowdVolume+"%","CONTINUOUS ARENA / CHEERS / BOOS",()=>{s.CrowdVolume=(s.CrowdVolume+25)%125;audio.CrowdVolume=s.CrowdVolume;Save();});
+                Add("COURT EFFECTS / "+s.EffectsVolume+"%","BOUNCE / SQUEAK / DUNK / WHISTLE",()=>{s.EffectsVolume=(s.EffectsVolume+20)%120;audio.EffectsVolume=s.EffectsVolume;Save();});
                 Add("KEYBOARD BINDINGS","CONFLICTING KEYS SWAP",()=>Open("controls"));
                 Add("FULLSCREEN","F11 ALSO TOGGLES",()=>ToggleFull());
                 Add("CREDITS / LICENSE","DOWNFIELD ART / MIT SOURCE",()=>{using(var stream=typeof(GameForm).Assembly.GetManifestResourceStream("Upcourt.License"))using(var reader=new System.IO.StreamReader(stream))MessageBox.Show(reader.ReadToEnd(),"Upcourt / License");});
@@ -759,6 +771,16 @@ namespace Upcourt  {
                         "FRANCHISE","22 ROUNDS / TOP SIX / PLAYOFF SERIES / DRAFT"
                     }
                     , {
+                        "JUMP / SPIN / STEPBACK","J / G / H | LB / LT+Y / LT+B"
+                    },{
+                        "DUNK OR ALLEY OOP","V | LT+X / CLOSE TO RIM TO DUNK"
+                    },{
+                        "PUNCH / CALL CUT","K / C | LT+RB / LT+A"
+                    },{
+                        "REFEREE / PENALTY","CAUGHT PUNCH = TWO SHOTS + BALL / TWO = EJECTION"
+                    },{
+                        "BUILD HEAT","STEALS / BLOCKS / BUCKETS / ON FIRE FOR 12 SEC"
+                    },{
                         "SAVING","AUTO EVERY 15 SEC / SAVE AND HOME RESUMES"
                     }
                 };
@@ -810,12 +832,13 @@ namespace Upcourt  {
             }
             base.Dispose(disposing);
         }
-        public void Preview(string path,bool court) {
+        public void Preview(string path,bool court,string moment="") {
             timer.Stop();
             if(court) {
                 League l=League.Create(0);
                 game=Match.Create(l,0,2,0,data.Settings,-1);
                 game.Phase="live";
+                if(moment=="attack"||moment=="dunk"){game.User.X=83;game.User.Y=25;game.BallX=83;game.BallY=25;foreach(var actor in game.Roster.Where(a=>a.OnCourt&&a!=game.User)){actor.X=actor.Side==0?68+actor.Slot*3:78+actor.Slot*2;actor.Y=5+actor.Slot*9;}if(moment=="dunk"){game.Hype(0,100,"ON FIRE");game.DunkOrLob();for(int i=0;i<9;i++)game.Update(.03f,0,0,false);}camera.Initialized=false;camera.Follow(game,0);}
                 screen="game";
             }
             else screen="home";

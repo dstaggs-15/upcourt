@@ -152,6 +152,7 @@ namespace Upcourt  {
                     R(g,Color.FromArgb(153,80,42),19,2,4,2);
                     R(g,skin,3,15,8,3);
                 }
+                if(pose=="punch"){R(g,outline,18,11,6,5);R(g,skin,18,12,6,3);R(g,cream,21,11,3,5);}
                 if(pose=="truck") {
                     R(g,outline,5,8,15,7);
                     R(g,jersey,6,9,13,5);

@@ -22,7 +22,7 @@ namespace Upcourt  {
         int buttons,old,provider=4;
         public bool Connected,HadPad;
         public float MX,MY;
-        public bool Sprint,UsesPad;
+        public bool Sprint,UsesPad,Trick;
         uint Read(uint index,out State state) {
             try {
                 return provider==4?Read4(index,out state):provider==3?Read3(index,out state):Read9(index,out state);
@@ -53,14 +53,14 @@ namespace Upcourt  {
             buttons=0;
             MX=MY=0;
             Connected=false;
-            Sprint=HeldKeys.Contains(Keys.ShiftKey);
+            Sprint=HeldKeys.Contains(Keys.ShiftKey);Trick=false;
             State s;
             for(uint i=0;i<4;i++)if(Read(i,out s)==0) {
                 Connected=true;
                 buttons=s.Pad.Buttons;
                 MX=Axis(s.Pad.LX);
                 MY=-Axis(s.Pad.LY);
-                Sprint|=s.Pad.RT>100;
+                Sprint|=s.Pad.RT>100;Trick=s.Pad.LT>100;
                 if(buttons!=old||Math.Abs(MX)+Math.Abs(MY)>.1f)UsesPad=true;
                 break;
             }

@@ -30,9 +30,39 @@ P opens the playbook and pauses the court. Calling a play resets its waypoint cl
 
 ## Defense and rebounding
 
+The follow camera now travels with the ball instead of holding the whole court in one shot. It leads a moving ball handler slightly, follows passes and reversals, and closes in on shot flight. The scoreboard and control hints stay fixed. Both ends use the same close player scale.
+
 Q/B chooses your player nearest the ball. Move into the ball handler's path. E/A reaches for a steal when close; an unsuccessful reach can become a foul. Space/X jumps to contest or block. A block requires proximity and timing during the early part of the shot flight.
 
 R/RB holds a defensive contest/box-out pose. Reach the expected rebound spot before the ball lands; proximity, rebounding skill and an active action affect who wins the board. Offensive rebounds reset the shot clock to 14 seconds. Defensive rebounds start a fresh 24-second possession.
+
+## Hyper arcade moves
+
+**Jump: J / LB.** Jump while running with or without the ball. Airborne players can clear standing traffic, reach rebounds and jump into a block attempt. Your height rises and falls over the jump; you cannot jump again in midair. A high ball handler is harder to strip. Space/X remains shoot on offense and jump/block on defense.
+
+**Spin: G / LT+Y.** Spin forward and to the side, spending energy for a short burst. A beaten defender can tumble into an ankle-breaker animation. It has a cooldown so repeatedly pressing it does not teleport you downcourt.
+
+**Step back: H / LT+B.** Create separation by hopping away from the attacking basket. Shoot during the short separation window for a bonus. It can carry you back over the half-court threshold, so watch your position.
+
+**Call a cut: C / LT+A.** Send an actual teammate toward the rim. Pass as the lane opens, or follow with an alley-oop. Your passer also makes a give-and-go run after releasing an ordinary pass.
+
+**Dunk / alley-oop: V / LT+X.** Within eighteen feet of the attacking rim, launch a power-dunk attempt. From farther away, throw a lob to a teammate already near the basket; an unobstructed catch chains into a real dunk attempt. If no finisher is ready, the game calls a cutter instead. Dunks can still be contested, blocked or fouled and count as ordinary two-point baskets.
+
+**Steal: E / A on defense.** Close the gap and reach for the ball. A clean strip credits the steal and the opponent's turnover, builds heat and gives you a short speed burst. A bad reach can still draw a foul.
+
+## Punches and the referee
+
+**Punch: K / LT+RB.** Swing at the nearest opponent within reach. A landed cartoon punch spends energy, knocks the opponent back and briefly stuns them. If they held the ball and no whistle comes, it becomes a real loose ball. Picking it up is not counted as a rebound.
+
+The referee moves along the sideline. Distance and players blocking the view affect the chance of a call; neither being close nor being far makes the result certain. A missed call displays **REF MISSED IT / PLAY ON**. CPU defenders occasionally try cheap shots and face the same consequences.
+
+A caught hit is a **flagrant foul: two free throws plus the victim team's possession**, with the clock stopped for the shots. It also adds a personal/team foul. A second caught punch ejects the offender for the game. Six personal fouls also disqualify them. An available real reserve takes the vacated slot; the ejected player cannot silently return at the next inbound. These penalties apply even if your team had the ball when you swung.
+
+## Heat, combos and crowd
+
+Steals, blocks, ankle breakers and baskets build your team's heat. Buckets reset the other team's scoring combo and reduce their heat. At full heat, your team is **on fire for twelve seconds**, gaining movement and shooting bonuses with pixel flames and louder reactions. Heat fades when you stop making plays. The bonus never changes the points awarded for a basket.
+
+The crowd now has a continuous stereo arena bed. Scores, dunks, blocks, misses and caught/uncaught hits trigger layered cheers, roars, gasps, groans or boos. Bounce, swish, sneaker, impact and whistle sounds play at the same time instead of interrupting the crowd. Options has separate master, crowd and court-effects levels. M/View mutes everything; leaving the window silences playback, and pausing lowers the ambience.
 
 Pause → Defense cycles man-to-man, 2–3 zone and full-court pressure for your team. Man defense follows matchups, zone uses five floor anchors, and pressure follows opponents tightly across the court. Opposing defenders use their own matchups and lane reactions.
 

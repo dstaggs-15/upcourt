@@ -8,10 +8,13 @@ namespace Upcourt  {
         public int Side,Slot;
         public bool OnCourt;
         public float X,Y,Fatigue=1,Action,Step,VX,VY;
+        public float JumpTime,StunTime,MoveCooldown,PunchCooldown,BoostTime,SeparationTime,CutTime;
+        public int Flagrants;public bool Ejected,BlockAttempted;
+        public float JumpHeight {get{return (float)Math.Sin(Util.Clamp(JumpTime/.85f,0,1)*Math.PI)*8;}}
         public string Pose="idle";
         public float EffectiveSpeed  {
             get {
-                return (11+Data.Speed*.075f)*(.68f+.32f*Fatigue);
+                return (14+Data.Speed*.09f)*(.68f+.32f*Fatigue);
             }
         }
     }
@@ -22,7 +25,7 @@ namespace Upcourt  {
         public string Pose="idle";
         public bool HasBall;
     }
-    public class Match  {
+    public partial class Match  {
         public int Version=1,HomeClub,AwayClub,UserSide,FixtureId=-1,HomeScore,AwayScore,Quarter=1,QuarterLength=90,Overtimes,Difficulty=1,Possession,Owner=-1,Controlled,LastPasser=-1,ShotActor=-1,PassTarget=-1,PointsValue,FreeThrows,FreeThrowShooter=-1,DefenseScheme,PlayIndex,Seed=4141,RandomCalls;
         public int[] Timeouts= {
             3,3
@@ -93,11 +96,11 @@ namespace Upcourt  {
             return m;
         }
         void FillLineup(int side) {
-            var on=Roster.Where(a=>a.Side==side&&a.OnCourt&&a.Data.InjuryRounds==0&&a.Box.Fouls<6).ToList();
-            foreach(var a in Roster.Where(a=>a.Side==side))if(a.Data.InjuryRounds>0||a.Box.Fouls>=6)a.OnCourt=false;
+            var on=Roster.Where(a=>a.Side==side&&a.OnCourt&&a.Data.InjuryRounds==0&&a.Box.Fouls<6&&!a.Ejected).ToList();
+            foreach(var a in Roster.Where(a=>a.Side==side))if(a.Data.InjuryRounds>0||a.Box.Fouls>=6||a.Ejected)a.OnCourt=false;
             HashSet<int> slots=new HashSet<int>(on.Select(a=>a.Slot));
             for(int slot=0;slot<5;slot++)if(!slots.Contains(slot)) {
-                Actor best=Roster.Where(a=>a.Side==side&&!a.OnCourt&&a.Data.InjuryRounds==0&&a.Box.Fouls<6).OrderByDescending(a=>a.Data.OVR+(a.Data.Eligible(slot)?12:0)).FirstOrDefault();
+                Actor best=Roster.Where(a=>a.Side==side&&!a.OnCourt&&a.Data.InjuryRounds==0&&a.Box.Fouls<6&&!a.Ejected).OrderByDescending(a=>a.Data.OVR+(a.Data.Eligible(slot)?12:0)).FirstOrDefault();
                 if(best!=null) {
                     best.Slot=slot;
                     best.OnCourt=true;
@@ -118,6 +121,7 @@ namespace Upcourt  {
         }
         void Say(string text) {
             Message=text;
+            if(text.Contains("FOUL")||text.Contains("VIOLATION"))Sound("whistle");
             Log.Insert(0,text);
             if(Log.Count>40)Log.RemoveAt(40);
         }
@@ -136,6 +140,7 @@ namespace Upcourt  {
             ShotActor=-1;
             PassTarget=-1;
             BallHeight=0;
+            AlleyPass=false;AlleyTarget=-1;DunkAttempt=false;CutTime=0;
             AutoRotate();
             for(int t=0;t<2;t++) {
                 FillLineup(t);
@@ -145,6 +150,7 @@ namespace Upcourt  {
                         25,7,43,17,34
                     }
                     [Math.Max(0,a.Slot)];
+                    a.JumpTime=0;a.Action=0;a.Pose=a.StunTime>0?"tackle":"idle";
                     a.X=Mirror(x,side);
                     a.Y=y;
                 }
@@ -162,7 +168,7 @@ namespace Upcourt  {
                 0,1
             }
             )foreach(var a in Roster.Where(a=>a.Side==side&&a.OnCourt).ToList()) {
-                var bench=Roster.Where(b=>b.Side==side&&!b.OnCourt&&b.Data.InjuryRounds==0&&b.Box.Fouls<6&&b.Data.Eligible(a.Slot)).OrderByDescending(b=>b.Fatigue+b.Data.OVR*.006f).FirstOrDefault();
+                var bench=Roster.Where(b=>b.Side==side&&!b.OnCourt&&b.Data.InjuryRounds==0&&b.Box.Fouls<6&&!b.Ejected&&b.Data.Eligible(a.Slot)).OrderByDescending(b=>b.Fatigue+b.Data.OVR*.006f).FirstOrDefault();
                 if(bench!=null&&(a.Fatigue<.58f||a.Box.Fouls>=6||a.Box.Fouls>=4&&Quarter<4||a.Box.Seconds>QuarterLength*4*a.Data.Rotation/40f&&bench.Fatigue>a.Fatigue+.08f)) {
                     bench.Slot=a.Slot;
                     bench.OnCourt=true;
@@ -173,7 +179,7 @@ namespace Upcourt  {
         public bool Substitute(int outId,int inId) {
             if(Phase=="live"||Phase=="shot"||Phase=="pass"||Phase=="loose")return false;
             Actor a=Roster.Find(p=>p.Data.Id==outId),b=Roster.Find(p=>p.Data.Id==inId);
-            if(a==null||b==null||a.Side!=UserSide||b.Side!=UserSide||!a.OnCourt||b.OnCourt||b.Data.InjuryRounds>0||b.Box.Fouls>=6||!b.Data.Eligible(a.Slot))return false;
+            if(a==null||b==null||a.Side!=UserSide||b.Side!=UserSide||!a.OnCourt||b.OnCourt||b.Data.InjuryRounds>0||b.Box.Fouls>=6||b.Ejected||!b.Data.Eligible(a.Slot))return false;
             b.OnCourt=true;
             b.Slot=a.Slot;
             a.OnCourt=false;
@@ -228,18 +234,24 @@ namespace Upcourt  {
         }
         public void Shoot(float timing) {
             Actor a=BallOwner;
-            if(a==null||Phase!="live")return;
+            if(a==null||Phase!="live"||a.StunTime>0)return;
             Charging=false;
             float d=Util.Distance(a.X,a.Y,Hoop(a.Side),25);
             float contest=ContestLevel(a);
             PointsValue=ThreePoint(a.X,a.Y,a.Side)?3:2;
-            bool inside=d<10;
+            ShotWasDunk=DunkAttempt&&d<=22;ShotWasAlley=FinishStyle=="ALLEY OOP"&&ShotWasDunk;DunkAttempt=false;
+            bool inside=d<10||ShotWasDunk;
             float ideal=inside?.5f:.72f,window=.055f+(a.Data.Shooting-60)*.0008f;
             bool green=Math.Abs(timing-ideal)<window;
             float quality=ShotAssist?.85f:Math.Max(.05f,1-Math.Abs(timing-ideal)*2.3f);
             ShotChance=Util.Clamp((inside?.57f+(a.Data.Finishing-70)*.008f:.40f+(a.Data.Shooting-70)*.009f)-(PointsValue==3?.12f:0)-Math.Max(0,d-26)*.025f-contest*.48f-(1-a.Fatigue)*.20f,.025f,.97f)*quality;
+            if(ShotWasDunk)ShotChance=Util.Clamp(.72f+(a.Data.Finishing-70)*.008f-contest*.25f+(a.BoostTime>0?.12f:0),.2f,.98f);
+            else if(a.JumpTime>0&&inside)ShotChance=Math.Min(.98f,ShotChance+.1f);
+            if(a.SeparationTime>0)ShotChance=Math.Min(.98f,ShotChance+.12f);
+            if(FireTime[a.Side]>0)ShotChance=Math.Min(.99f,ShotChance+.16f);
             if(green&&contest<.45f&&d<29)ShotChance=Math.Max(ShotChance,.96f);
             if(a.Side==UserSide)ShotChance=Util.Clamp(ShotChance+(1-Difficulty)*.04f,.02f,.98f);
+            ShotStartHeight=2+a.JumpHeight;
             ShotFeedback=(green?"GREEN":timing<ideal-.08?"EARLY":timing>ideal+.08?"LATE":"GOOD")+" / "+(contest>.65?"SMOTHERED":contest>.3?"CONTESTED":"OPEN")+" / "+(int)(ShotChance*100)+"%";
             a.Box.FGA++;
             if(PointsValue==3)a.Box.TPA++;
@@ -267,12 +279,14 @@ namespace Upcourt  {
             TargetX=Hoop(a.Side);
             TargetY=25;
             Flight=0;
-            FlightDuration=.65f+d*.014f;
+            FlightDuration=ShotWasDunk?.55f:.65f+d*.014f;
             Phase="shot";
             Owner=-1;
             BallHeight=2;
             a.Pose=inside?"highcatch":"throw";
             a.Action=.55f;
+            if(ShotWasDunk){a.JumpTime=.85f;a.Pose="highcatch";Sound("jump");Flash(ShotWasAlley?"UP HIGH!":"TAKING FLIGHT!",.8f);}
+            else Sound("shot");
             Say(ShotBlocked?"BLOCKED!":inside?(d<4&&a.Data.Finishing>80?"DUNK ATTEMPT":"AT THE RIM"):"SHOT AWAY");
         }
         public void Pass(int slot,bool lob) {
@@ -285,6 +299,7 @@ namespace Upcourt  {
         void BeginPass(Actor target,bool lob) {
             Actor a=BallOwner;
             if(a==null)return;
+            AlleyPass=false;AlleyTarget=-1;Charging=false;a.CutTime=3;
             LastPasser=Owner;
             PassTarget=Roster.IndexOf(target);
             PassAge=0;
@@ -299,7 +314,7 @@ namespace Upcourt  {
             Phase="pass";
             Owner=-1;
             a.Pose="throw";
-            a.Action=.35f;
+            a.Action=.35f;Sound("pass");
         }
         public void Skill() {
             if(Phase!="live"||User==null||User.Side!=Possession||Owner!=Controlled||User.Action>0)return;
@@ -315,12 +330,13 @@ namespace Upcourt  {
                 }
                 return;
             }
+            User.MoveCooldown=.5f;User.BoostTime=.38f;Sound("squeak");
             User.Action=.45f;
             User.Pose="juke";
             User.Fatigue=Math.Max(.2f,User.Fatigue-.025f);
             foreach(var b in Roster.Where(b=>b.OnCourt&&b.Side!=Possession&&Util.Distance(b.X,b.Y,User.X,User.Y)<5)) {
                 if(Roll()<.45+(User.Data.Handle-b.Data.Defense)*.01)b.Action=.4f;
-                else if(Roll()<.16) {
+                else if(Roll()<.08) {
                     User.Box.Turnovers++;
                     b.Box.Steals++;
                     TakeBall(b,"STRIPPED");
@@ -342,14 +358,15 @@ namespace Upcourt  {
         public void Steal() {
             Actor user=User,a=BallOwner;
             if(Phase!="live"||user==null||a==null||user.Side==a.Side||user.Action>0)return;
-            user.Action=.5f;
+            if(user.StunTime>0)return;
+            user.Action=.4f;
             user.Pose="block";
-            if(Util.Distance(user.X,user.Y,a.X,a.Y)>5)return;
+            if(Util.Distance(user.X,user.Y,a.X,a.Y)>5||a.JumpHeight>3)return;
             double roll=Roll();
-            if(roll<.12+(user.Data.Defense-a.Data.Handle)*.008) {
+            if(roll<Util.Clamp(.36f+(user.Data.Defense-a.Data.Handle)*.006f+(user.X*Attack(a.Side)>a.X*Attack(a.Side)?.1f:0),.16f,.8f)) {
                 user.Box.Steals++;
                 a.Box.Turnovers++;
-                TakeBall(user,"STEAL / GO!");
+                TakeBall(user,"STEAL / GO!");user.BoostTime=.9f;Hype(user.Side,22,"PICKPOCKET!");Sound("steal");Sound("crowd_gasp");
             }
             else if(roll>.78) {
                 user.Box.Fouls++;
@@ -362,20 +379,7 @@ namespace Upcourt  {
                 else Setup(a.Side,"REACH-IN FOUL / INBOUND");
             }
         }
-        public void Block() {
-            if(User==null||User.Side==Possession||User.Action>0)return;
-            User.Action=.65f;
-            User.Pose="highcatch";
-            if(Phase=="shot"&&ShotActor>=0&&Flight<.3f) {
-                Actor shooter=Roster[ShotActor];
-                if(Util.Distance(User.X,User.Y,shooter.X,shooter.Y)<5&&Roll()<.3+(User.Data.Defense-70)*.007&&!ShotBlocked) {
-                    ShotBlocked=true;
-                    ShotMade=false;
-                    User.Box.Blocks++;
-                    Say("BLOCKED!");
-                }
-            }
-        }
+        public void Block(){Jump();}
         void TakeBall(Actor a,string text) {
             Possession=a.Side;
             Owner=Roster.IndexOf(a);
@@ -432,7 +436,8 @@ namespace Upcourt  {
             else {
                 int side=a.Side;
                 FreeThrowShooter=-1;
-                Setup(1-side,ShotFeedback);
+                int next=PenaltyPossession>=0?PenaltyPossession:1-side;PenaltyPossession=-1;
+                Setup(next,ShotFeedback);
             }
         }
         void AddScore(int side,int pts) {
@@ -445,7 +450,7 @@ namespace Upcourt  {
                 shooter.Box.FGM++;
                 shooter.Box.Points+=PointsValue;
                 if(PointsValue==3)shooter.Box.TPM++;
-                AddScore(shooter.Side,PointsValue);
+                AddScore(shooter.Side,PointsValue);ArcadeBasket(shooter);
                 if(LastPasser>=0&&LastPasser!=ShotActor&&PassAge<4)Roster[LastPasser].Box.Assists++;
                 if(Contest) {
                     ContestPoints+=ContestShots%5==4?2:1;
@@ -460,6 +465,7 @@ namespace Upcourt  {
             }
             else {
                 if(Contest) {
+                    Sound("rim");Sound("crowd_groan");
                     NextContest();
                     return;
                 }
@@ -467,7 +473,8 @@ namespace Upcourt  {
                     BeginFreeThrows();
                     return;
                 }
-                Phase="loose";
+                Phase="loose";LooseFromShot=true;
+                if(!Contest){Sound("rim");Sound("crowd_groan");}
                 StateTime=.55f;
                 BallHeight=0;
                 BallX=Util.Clamp(TargetX+(float)(Roll()-.5)*12,1,93);
@@ -478,12 +485,14 @@ namespace Upcourt  {
         public void Update(float dt,float moveX,float moveY,bool sprint) {
             if(Over)return;
             dt=Math.Min(.04f,Math.Max(0,dt));
+            if(dt<=0)return;
             PassAge+=dt;
             StateTime-=dt;
             ScreenTime=Math.Max(0,ScreenTime-dt);
             foreach(var a in Roster) {
                 a.Action=Math.Max(0,a.Action-dt);
                 if(a.Action==0)a.Pose="idle";
+                a.SeparationTime=Math.Max(0,a.SeparationTime-dt);
                 if(a.OnCourt) {
                     a.Fatigue=Math.Max(.18f,a.Fatigue-dt*(sprint&&a==User?.011f:.003f)*(1.6f-a.Data.Stamina/100f));
                     if(Phase=="live"||Phase=="shot"||Phase=="pass"||Phase=="loose") {
@@ -493,6 +502,7 @@ namespace Upcourt  {
                 }
                 else a.Fatigue=Math.Min(1,a.Fatigue+dt*.018f);
             }
+            TickArcade(dt,moveX,moveY);
             if(Charging) {
                 Charge=Math.Min(1.99f,Charge+dt*(Phase=="freethrow"?.72f:.9f));
                 if(Charge>=1.99f)ReleaseShot();
@@ -585,7 +595,7 @@ namespace Upcourt  {
                     Phase="live";
                     BallHeight=0;
                     if(target.Side==UserSide)Controlled=Owner;
-                    SyncBall();
+                    SyncBall();FinishAlley();
                 }
             }
             else if(Phase=="shot") {
@@ -593,7 +603,7 @@ namespace Upcourt  {
                 float f=Util.Clamp(Flight/FlightDuration,0,1);
                 BallX=StartX+(TargetX-StartX)*f;
                 BallY=StartY+(TargetY-StartY)*f;
-                BallHeight=2+(float)Math.Sin(f*Math.PI)*13;
+                BallHeight=ShotStartHeight*(1-f)+9*f+(float)Math.Sin(f*Math.PI)*(ShotWasDunk?9:13);
                 MoveOffBall(dt);
                 if(f>=1)ResolveShot();
             }
@@ -601,11 +611,13 @@ namespace Upcourt  {
                 if(User!=null)Move(User,moveX,moveY,dt,sprint);
                 foreach(var a in Roster.Where(a=>a.OnCourt&&a!=User))Toward(a,BallX,BallY,dt,.85f);
                 if(StateTime<=0) {
-                    Actor rebounder=Roster.Where(a=>a.OnCourt).OrderBy(a=>Util.Distance(a.X,a.Y,BallX,BallY)-a.Data.Rebounding*.035f-(a.Action>0?1:0)).First();
+                    Actor rebounder=Roster.Where(a=>a.OnCourt).OrderBy(a=>Util.Distance(a.X,a.Y,BallX,BallY)-a.Data.Rebounding*.035f-a.JumpHeight*.35f-(a.Action>0?1:0)+(a.StunTime>0?1000:0)).First();
                     bool offensive=rebounder.Side==Possession;
-                    rebounder.Box.Rebounds++;
-                    TakeBall(rebounder,offensive?"OFFENSIVE BOARD / 14 SECONDS":"DEFENSIVE REBOUND");
-                    if(offensive)ShotClock=14;
+                    if(LooseFromShot)rebounder.Box.Rebounds++;else if(!offensive)rebounder.Box.Steals++;
+                    float remainingShotClock=ShotClock;
+                    TakeBall(rebounder,LooseFromShot?(offensive?"OFFENSIVE BOARD / 14 SECONDS":"DEFENSIVE REBOUND"):(offensive?"LOOSE BALL RECOVERED":"LOOSE BALL STEAL / GO!"));
+                    if(offensive&&LooseFromShot)ShotClock=14;
+                    else if(offensive)ShotClock=remainingShotClock;
                 }
             }
             CheckPeriod();
@@ -627,17 +639,19 @@ namespace Upcourt  {
             }
         }
         void Move(Actor a,float dx,float dy,float dt,bool sprint) {
+            if(a.StunTime>0||a.Ejected){a.VX=a.VY=0;return;}
             float len=(float)Math.Sqrt(dx*dx+dy*dy);
             if(len<.05f) {
                 a.VX=a.VY=0;
                 return;
             }
             len=Math.Max(1,len);
-            float speed=a.EffectiveSpeed*(sprint&&a.Fatigue>.25f?1.25f:1);
+            float speed=a.EffectiveSpeed*(sprint&&a.Fatigue>.25f?1.42f:1)*(a.BoostTime>0?1.35f:1)*(FireTime[a.Side]>0?1.12f:1);
             if(Charging&&a==BallOwner)speed*=.2f;
-            if(a.Action>0&&a.Pose=="highcatch")speed*=.2f;
+            if(a.JumpTime>0)speed*=.85f;
             float nx=Util.Clamp(a.X+dx/len*speed*dt,.8f,93.2f),ny=Util.Clamp(a.Y+dy/len*speed*dt,1,49);
             foreach(var b in Roster.Where(b=>b.OnCourt&&b!=a)) {
+                if(b.StunTime>0||b.JumpHeight>4||a.JumpHeight>4)continue;
                 float distance=Util.Distance(nx,ny,b.X,b.Y);
                 if(distance<1.9f) {
                     float push=(1.9f-distance)*.5f;
@@ -670,6 +684,7 @@ namespace Upcourt  {
             if(owner==null)return;
             foreach(var a in Roster.Where(a=>a.OnCourt&&a!=User).ToList()) {
                 if(Phase!="live")break;
+                if(a.StunTime>0||a.Ejected)continue;
                 if(a==owner) {
                     float d=Util.Distance(a.X,a.Y,Hoop(a.Side),25);
                     float quality=ContestLevel(a);
@@ -695,6 +710,7 @@ namespace Upcourt  {
                         tx=route.Points[node].X;
                         ty=route.Points[node].Y;
                     }
+                    if(a.CutTime>0||CutTime>0&&Roster.IndexOf(a)==CutTarget){tx=88;ty=25;}
                     if(ScreenTime>0&&a.Slot==4) {
                         tx=Mirror(owner.X,owner.Side)+3;
                         ty=owner.Y+2;
@@ -725,7 +741,7 @@ namespace Upcourt  {
                     }
                     if(ScreenTime>0&&Util.Distance(a.X,a.Y,owner.X,owner.Y)<7&&Roll()<dt*.4)a.Action=.6f;
                     Toward(a,tx,ty,dt,a.Action>0?.4f:.93f);
-                    if(mark==owner&&Util.Distance(a.X,a.Y,owner.X,owner.Y)<3&&Roll()<dt*(.025+Difficulty*.02)) {
+                    if(mark==owner&&owner.JumpHeight<3&&Util.Distance(a.X,a.Y,owner.X,owner.Y)<3&&Roll()<dt*(.025+Difficulty*.02)) {
                         if(Roll()<.7) {
                             a.Box.Steals++;
                             owner.Box.Turnovers++;
@@ -743,8 +759,8 @@ namespace Upcourt  {
                         }
                         break;
                     }
-                    if(Charging&&Util.Distance(a.X,a.Y,owner.X,owner.Y)<5&&Roll()<dt*1.2) {
-                        a.Action=.4f;
+                    if(Charging&&a.JumpTime<=0&&a.MoveCooldown<=0&&Util.Distance(a.X,a.Y,owner.X,owner.Y)<5&&Roll()<dt*1.2) {
+                        a.Action=.4f;a.JumpTime=.85f;a.MoveCooldown=.95f;a.BlockAttempted=false;
                         a.Pose="highcatch";
                     }
                 }
@@ -770,8 +786,8 @@ namespace Upcourt  {
             Say("FINAL / "+HomeScore+" - "+AwayScore);
         }
         void SimPossession(int side) {
-            var offense=Roster.Where(q=>q.Side==side&&q.Data.InjuryRounds==0&&q.Box.Fouls<6).OrderByDescending(q=>q.OnCourt?1000+q.Data.OVR:q.Data.OVR).Take(8).ToList();
-            var defense=Roster.Where(q=>q.Side!=side&&q.Data.InjuryRounds==0&&q.Box.Fouls<6).OrderByDescending(q=>q.OnCourt?1000+q.Data.OVR:q.Data.OVR).Take(8).ToList();
+            var offense=Roster.Where(q=>q.Side==side&&q.Data.InjuryRounds==0&&q.Box.Fouls<6&&!q.Ejected).OrderByDescending(q=>q.OnCourt?1000+q.Data.OVR:q.Data.OVR).Take(8).ToList();
+            var defense=Roster.Where(q=>q.Side!=side&&q.Data.InjuryRounds==0&&q.Box.Fouls<6&&!q.Ejected).OrderByDescending(q=>q.OnCourt?1000+q.Data.OVR:q.Data.OVR).Take(8).ToList();
             if(offense.Count==0||defense.Count==0)return;
             foreach(var actor in offense.Concat(defense)) {
                 actor.Box.Games=1;

@@ -16,6 +16,12 @@ Or get the **[portable EXE](https://github.com/dstaggs-15/upcourt/raw/refs/heads
 
 ## On the court
 
+- A **moving follow camera** tracks the ball up and down the floor, leads fast breaks and moves closer for shots. Players stay large as you reach either basket.
+- **Hyper arcade offense:** turbo runs, spin dribbles, step-backs, pump fakes, called cuts, give-and-go runs, power dunks and automatic alley-oop finishes.
+- **Jump whenever you want** to clear traffic, attack the rim, win boards or reject a shot. Steals now create a burst of fast-break speed.
+- **Punches with referee risk:** land a cartoon hit to knock an opponent down, but a caught punch awards two free throws and possession. Two caught punches eject the offender. Referee position and blocked sightlines affect whether the hit is seen; CPU defenders can occasionally try a cheap shot too.
+- **Heat and combos:** steals, blocks, ankle breakers and buckets fill your heat meter. Earn twelve seconds on fire for faster movement and stronger shooting, with flames, impact shake and big-play callouts.
+- **Continuous stereo crowd noise** with cheers, boos, gasps and roars mixed under dribbles, sneakers, swishes, rim slams, hits and whistles. Separate crowd and effects volume controls are in Options.
 - Play **both offense and defense** in five-on-five basketball.
 - Hold and release to shoot. A visible meter reports timing, contest level and estimated make probability. Close finishes use an earlier release point.
 - Make two-pointers, corner threes and shots from behind the arc. Layups and dunk attempts use finishing skill.
@@ -29,6 +35,10 @@ Or get the **[portable EXE](https://github.com/dstaggs-15/upcourt/raw/refs/heads
 - Draw five-player routes and save up to **40 custom plays**. Name, edit, delete and use them from the playbook.
 
 ![On the court](docs/court.png)
+
+![Attacking the rim with the follow camera](docs/attack.png)
+
+![On-fire dunk](docs/dunk.png)
 
 ## Modes
 
@@ -67,6 +77,12 @@ The [player and franchise guide](docs/PLAYER-GUIDE.md) explains the rules, econo
 | Crossover / pump fake while charging | F | Y |
 | Screen / box out | R | RB |
 | Block / jump contest on defense | Space | X |
+| Jump on either end | J | LB |
+| Spin dribble | G | LT + Y |
+| Step back | H | LT + B |
+| Power dunk / alley-oop pass | V | LT + X |
+| Punch | K | LT + RB |
+| Call a cut | C | LT + A |
 | Playbook | P | Pause → Playbook |
 | Timeout | T | Pause → Timeout |
 | Pause | Escape | Menu |
@@ -105,11 +121,13 @@ The installer build verifies a fresh installation, reinstall and SHA-256 identit
 - [Downfield analysis and basketball design mapping](docs/DOWNFIELD-ANALYSIS.md)
 - [Source architecture](docs/ARCHITECTURE.md)
 - [REA evidence](research/README.md)
-- `src/Match.cs`: live basketball, rules, AI and simulation.
+- `src/Match.cs`, `Arcade.cs`: live basketball, arcade moves, referee penalties, heat, AI and simulation.
+- `src/CourtCamera.cs`: smooth ball tracking, fast-break look-ahead and shot framing.
 - `src/League.cs`: rosters, finances, trades, schedule, postseason, career and draft.
 - `src/GameForm.cs`, `Rendering.cs`, `PlayDesigner.cs`: pixel menus, arena and route editor.
 - `src/PixelArt.cs`: Downfield's font and adapted original player renderer.
-- `src/Persistence.cs`, `Input.cs`, `Audio.cs`: saves, keyboard/XInput and generated effects.
+- `src/Persistence.cs`, `Input.cs`: saves and keyboard/XInput.
+- `src/Audio.cs`, `StadiumMixer.cs`, `ArcadeSounds.cs`, `WaveOutput.cs`: continuous stereo crowd and layered court effects using Downfield's native PCM-output approach.
 
 This is an arcade rule set. Court boundaries constrain movement; it does not model every professional rule, a full referee/out-of-bounds system, online multiplayer or local versus play. Match simulation is a separate accelerated possession model. Sound is synthesized; Downfield's recorded football crowds are not bundled. Automated checks cover the implemented flows; physical controller feel, long human play sessions and audio hardware still need playtesting.
 

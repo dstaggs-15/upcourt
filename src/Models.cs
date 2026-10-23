@@ -167,11 +167,12 @@ namespace Upcourt  {
     public class Settings  {
         public int Version=1,Difficulty=1,QuarterSeconds=90,Volume=60;
         public bool AutoSubs=true,ShotAssist=false,Muted=false;
+        public int CrowdVolume=75,EffectsVolume=85;
         public string[] Keys= {
-            "W","S","A","D","Space","E","Q","F","R","D1","D2","D3","D4","D5","P"
+            "W","S","A","D","Space","E","Q","F","R","D1","D2","D3","D4","D5","P","J","G","H","V","K","C"
         };
         public static readonly string[] Actions= {
-            "Move up","Move down","Move left","Move right","Shoot / block","Pass / steal","Switch player","Crossover","Screen / box out","Pass to PG","Pass to SG","Pass to SF","Pass to PF","Pass to C","Playbook"
+            "Move up","Move down","Move left","Move right","Shoot / block","Pass / steal","Switch player","Crossover","Screen / box out","Pass to PG","Pass to SG","Pass to SF","Pass to PF","Pass to C","Playbook","Jump","Spin dribble","Step back","Dunk / alley oop","Punch","Call a cut"
         };
     }
     public class SaveData  {

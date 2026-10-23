@@ -1,56 +1,14 @@
 using System;
-using System.IO;
-using System.Media;
-namespace Upcourt  {
-    public class Audio:IDisposable  {
-        SoundPlayer player;
-        MemoryStream stream;
-        public bool Muted;
-        public int Volume=60;
-        public void Cue(string name) {
-            if(Muted||Volume<=0)return;
-            try {
-                if(player!=null)player.Dispose();
-                if(stream!=null)stream.Dispose();
-                int rate=22050,count=name=="buzzer"?8000:1800;
-                byte[] bytes=new byte[count*2];
-                Random random=new Random(7);
-                for(int i=0;i<count;i++) {
-                    double t=(double)i/rate,f=name=="score"?660:name=="buzzer"?130:360;
-                    double wave=Math.Sin(t*f*Math.PI*2)*(1-(double)i/count);
-                    if(name=="bounce")wave+=((random.NextDouble()-.5)*.2);
-                    short sample=(short)(wave*7000*Volume/100);
-                    bytes[i*2]=(byte)sample;
-                    bytes[i*2+1]=(byte)(sample>>8);
-                }
-                stream=new MemoryStream();
-                using(var w=new BinaryWriter(stream,System.Text.Encoding.UTF8,true)) {
-                    w.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
-                    w.Write(36+bytes.Length);
-                    w.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));
-                    w.Write(16);
-                    w.Write((short)1);
-                    w.Write((short)1);
-                    w.Write(rate);
-                    w.Write(rate*2);
-                    w.Write((short)2);
-                    w.Write((short)16);
-                    w.Write(System.Text.Encoding.ASCII.GetBytes("data"));
-                    w.Write(bytes.Length);
-                    w.Write(bytes);
-                }
-                stream.Position=0;
-                player=new SoundPlayer(stream);
-                player.Play();
-            }
-            catch(InvalidOperationException) {
-            }
-            catch(System.ComponentModel.Win32Exception) {
-            }
-        }
-        public void Dispose() {
-            if(player!=null)player.Dispose();
-            if(stream!=null)stream.Dispose();
-        }
-    }
+namespace Upcourt {
+public sealed class Audio:IDisposable {
+    public readonly StadiumMixer Mixer=new StadiumMixer();readonly WaveOutput output;
+    public Audio(){if(WaveOutput.DeviceCount>0)output=new WaveOutput(Mixer);}
+    public bool Muted {get{return Mixer.Muted;}set{Mixer.Muted=value;}}
+    public int Volume {get{return (int)(Mixer.Volume*100);}set{Mixer.Volume=Util.Clamp(value/100f,0,1);}}
+    public int CrowdVolume {get{return (int)(Mixer.CrowdVolume*100);}set{Mixer.CrowdVolume=Util.Clamp(value/100f,0,1);}}
+    public int EffectsVolume {get{return (int)(Mixer.EffectsVolume*100);}set{Mixer.EffectsVolume=Util.Clamp(value/100f,0,1);}}
+    public void SetContext(bool stadium,bool focused,bool paused){Mixer.Stadium=stadium;Mixer.Suspended=!focused;Mixer.Paused=paused;}
+    public void Cue(string name){Mixer.Play(name);}
+    public void Dispose(){if(output!=null)output.Dispose();}
+}
 }

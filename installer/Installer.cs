@@ -63,7 +63,7 @@ namespace Upcourt  {
                 File.Delete(temp);
             }
             else File.Move(temp,exe);
-            File.WriteAllText(Path.Combine(path,"Read Me.txt"),"Upcourt - Pixel Basketball\r\nWASD move, Shift sprint, Space hold/release shoot, E pass, Q switch, F crossover, R screen, P playbook, Escape pause. Xbox: left stick move, RT sprint, X shoot, A pass, B switch, Y crossover, RB screen.\r\nSaves: %LOCALAPPDATA%\\Upcourt\\career.xml\r\nTo uninstall, delete this program folder and desktop shortcut. Saves are kept separately.\r\nSource and full guide: https://github.com/dstaggs-15/upcourt\r\n");
+            File.WriteAllText(Path.Combine(path,"Read Me.txt"),"Upcourt - Pixel Basketball\r\nWASD move, Shift sprint, Space hold/release shoot, E pass, Q switch, F crossover, R screen, P playbook, Escape pause. Xbox: left stick move, RT sprint, X shoot, A pass, B switch, Y crossover, RB screen.\r\nArcade moves: J jump, G spin, H stepback, V dunk or alley-oop, K punch, C call cut. Xbox: LB jump, LT+Y spin, LT+B stepback, LT+X dunk, LT+RB punch, LT+A cut.\r\nSaves: %LOCALAPPDATA%\\Upcourt\\career.xml\r\nTo uninstall, delete this program folder and desktop shortcut. Saves are kept separately.\r\nSource and full guide: https://github.com/dstaggs-15/upcourt\r\n");
             if(!custom) {
                 string desktop=Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 Type shellType=Type.GetTypeFromProgID("WScript.Shell");

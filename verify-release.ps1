@@ -8,6 +8,7 @@ $expected = (Get-FileHash -LiteralPath $built -Algorithm SHA256).Hash
 if ((Get-FileHash -LiteralPath $portable -Algorithm SHA256).Hash -ne $expected) { throw 'Portable game is stale.' }
 $gameAssembly = [Reflection.Assembly]::LoadFile($portable)
 if ($null -ne $gameAssembly.GetType('Upcourt.Tests', $false)) { throw 'Test helper found in playable EXE.' }
+if ($null -ne $gameAssembly.GetType('Upcourt.ArcadeTests', $false)) { throw 'Arcade test helper found in playable EXE.' }
 if ($null -eq $gameAssembly.GetManifestResourceStream('Upcourt.License')) { throw 'License missing from portable game.' }
 $installerAssembly = [Reflection.Assembly]::LoadFile($installer)
 $payload = $installerAssembly.GetManifestResourceStream('Upcourt.Payload')

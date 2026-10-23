@@ -182,9 +182,9 @@ namespace Upcourt  {
             Rect(x+15,y+23,10,12,Gold);
             Rect(x+5,y+35,30,6,Color.FromArgb(148,96,58));
         }
-        void DrawSprite(float x,float y,float w,float h,int primary,int number,string pose,float step,float vx,int side) {
+        void DrawSprite(float x,float y,float w,float h,int primary,int number,string pose,float step,float vx,int side,float poseTime=.3f) {
             Player p=new Player {
-                Primary=primary,Secondary=0xF5E8C2,Number=number%100,Team=side,Pose=pose,Step=step,VX=vx,VZ=2,PoseTime=.3f
+                Primary=primary,Secondary=0xF5E8C2,Number=number%100,Team=side,Pose=pose,Step=step,VX=vx,VZ=2,PoseTime=poseTime
             };
             g.DrawImage(PixelPlayers.Get(p),new Rectangle((int)x,(int)y,(int)w,(int)h));
         }
@@ -195,8 +195,8 @@ namespace Upcourt  {
             Line(x,y-radius+2,x,y+radius-2,Color.FromArgb(103,57,37),2);
         }
         PointF Project(float x,float y,float h) {
-            float depth=x*.70f+38;
-            return new PointF(640+(y-25)*950/depth,250+17000/depth-h*500/depth);
+            PointF p=camera.Project(x,y,h);
+            if(game!=null&&game.ImpactTime>0){p.X+=(float)Math.Sin(time*79)*game.Impact*1.8f;p.Y+=(float)Math.Cos(time*61)*game.Impact;}return p;
         }
         void CourtLine(float x,float y,float xx,float yy,Color c,float w) {
             PointF a=Project(x,y,0),b=Project(xx,yy,0);
@@ -231,7 +231,7 @@ namespace Upcourt  {
                             Color.FromArgb(255,Color.FromArgb(game.HomeColor)),Color.FromArgb(255,Color.FromArgb(game.AwayColor)),White,Blue,Gold
                         };
                         Rect(xx-1,yy+3,6,4,shirts[hash%5]);
-                        if((hash+(int)(time*3))%19==0) {
+                        if((hash+(int)(time*3))%Math.Max(3,19-(int)(game.CrowdEnergy*8))==0) {
                             Rect(xx-3,yy,2,5,skin);
                             Rect(xx+5,yy-1,2,5,skin);
                         }
@@ -247,6 +247,7 @@ namespace Upcourt  {
             TextAt(game.AwayScore.ToString("00"),727,165,30,White);
             Rect(0,266,1280,18,Ink);
             for(int i=0;i<5;i++)TextAt(i%2==0?"UPCOURT":Clip(game.HomeName,20),i*256+12,269,10,i%2==0?Gold:Mint);
+            GraphicsState courtState=g.Save();g.SetClip(new Rectangle(0,286,1280,436));
             Quad(-5,-7,99,57,Color.FromArgb(72,71,76));
             Quad(0,-2,94,52,Color.FromArgb(255,Color.FromArgb(game.HomeColor)));
             for(int x=0;x<94;x+=4)Quad(x,0,Math.Min(94,x+4),50,(x/4)%2==0?Color.FromArgb(160,111,66):Color.FromArgb(171,121,75));
@@ -281,6 +282,7 @@ namespace Upcourt  {
                     DrawSprite(p.X-10,p.Y-28,20,28,side==0?game.HomeColor:game.AwayColor,10+n,"clap",time,0,side);
                 }
             }
+            g.Restore(courtState);
         }
         void DrawHoop(int side) {
             float x=side==0?5.25f:88.75f;
@@ -296,27 +298,35 @@ namespace Upcourt  {
         }
         void DrawGame() {
             if(game==null)return;
+            if(!camera.Initialized)camera.Follow(game,0);
             DrawArena();
+            GraphicsState actionState=g.Save();g.SetClip(new Rectangle(0,286,1280,436));
             DrawHoop(1);
+            DrawHoop(0);
             foreach(var a in game.Roster.Where(a=>a.OnCourt).OrderByDescending(a=>a.X)) {
                 PointF p=Project(a.X,a.Y,0);
-                float scale=46/(a.X*.012f+1);
+                float scale=camera.SpriteSize(a.X);
+                if(a.BoostTime>0){for(int streak=1;streak<4;streak++)Rect(p.X-a.VY*.25f-streak*8,p.Y-scale*.6f+streak*4,13,4,streak==1?Gold:Blue);}
+                if(game.FireTime[a.Side]>0){for(int f=0;f<4;f++)Rect(p.X-scale*.4f+f*scale*.23f,p.Y-8-(f+(int)(time*10))%3*6,7,12, f%2==0?Gold:Red);}
                 if(game.User==a) {
                     Ell(p.X-scale*.38f,p.Y-3,scale*.76f,9,Gold);
                 }
                 else if(a.Side==game.UserSide)Ell(p.X-scale*.3f,p.Y-2,scale*.6f,6,Color.FromArgb(42,64,70));
-                float jump=a.Action>0&&a.Pose=="highcatch"?6:0;
-                DrawSprite(p.X-scale/2,p.Y-scale*1.25f-jump,scale,scale*1.25f,a.Side==0?game.HomeColor:game.AwayColor,a.Data.Number,a.Pose,a.Step,a.VY,a.Side);
+                float jump=a.JumpHeight*3*camera.Zoom;
+                DrawSprite(p.X-scale/2,p.Y-scale*1.25f-jump,scale,scale*1.25f,a.Side==0?game.HomeColor:game.AwayColor,a.Data.Number,a.Pose,a.Step,a.VY,a.Side,a.Action);
                 if(a.Side==game.UserSide) {
                     TextAt((a.Slot+1).ToString(),p.X-5,p.Y-scale*1.25f-17,10,White);
                 }
                 if(a==game.User)TextAt(Clip(a.Data.Name,15),p.X-45,p.Y+13,10,Gold);
             }
-            DrawHoop(0);
-            float ballHeight=game.Phase=="shot"||game.Phase=="pass"?game.BallHeight:1.5f+(float)Math.Abs(Math.Sin(time*10))*1.5f;
+            PointF referee=Project(game.RefX,game.RefY,0);float refSize=camera.SpriteSize(game.RefX);DrawSprite(referee.X-refSize/2,referee.Y-refSize*1.25f,refSize,refSize*1.25f,0xEEEECC,0,"run",time*4,0,0);TextAt("REF",referee.X-18,referee.Y-refSize*1.25f-18,10,Gold);
+            float ballHeight=game.Phase=="shot"||game.Phase=="pass"?game.BallHeight:1.5f+(game.BallOwner==null?0:game.BallOwner.JumpHeight)+(float)Math.Abs(Math.Sin(time*10))*1.5f;
             PointF ball=Project(game.BallX,game.BallY,ballHeight),shadow=Project(game.BallX,game.BallY,0);
             Ell(shadow.X-5,shadow.Y-2,10,4,Color.FromArgb(96,70,51));
-            Basketball(ball.X+5,ball.Y,6);
+            Basketball(ball.X+5,ball.Y,8);
+            g.Restore(actionState);
+            if(game.BannerTime>0){Rect(166,297,948,56,Ink);Center(Clip(game.ArcadeBanner,39),313,20,game.FireTime[game.Possession]>0?Red:Gold);}
+            int heatSide=game.UserSide>=0?game.UserSide:0;Rect(20,357,202,43,Ink);TextAt(game.FireTime[heatSide]>0?"ON FIRE!":"HEAT / X"+game.Combo[heatSide],30,365,10,Gold);Rect(30,386,180,7,PanelColor);Rect(30,386,game.Heat[heatSide]*1.8f,7,game.FireTime[heatSide]>0?Red:Gold);
             Rect(0,0,1280,105,Ink);
             Rect(0,0,1280,6,Gold);
             TextAt(Clip(game.HomeName,25),26,20,16,Mint);
@@ -332,7 +342,7 @@ namespace Upcourt  {
             Rect(0,722,1280,78,Ink);
             TextAt(Clip(game.Message,95),28,733,12,Gold);
             TextAt(Clip(game.ShotFeedback,60),28,758,10,Mint);
-            TextAt("SPACE SHOOT / E PASS / Q SWITCH / ESC PAUSE",28,783,10,Muted);
+            TextAt(input.UsesPad?(game.Possession==game.UserSide?"X SHOT / A PASS / Y CROSS / LT+X JAM / LT+RB PUNCH / LB JUMP":"A STEAL / X BLOCK / B SWITCH / LB JUMP / LT+RB PUNCH"):(game.Possession==game.UserSide?"SPACE SHOT / E PASS / J JUMP / G SPIN / H STEP / V JAM / K PUNCH / C CUT":"E STEAL / SPACE BLOCK / J JUMP / Q SWITCH / SHIFT TURBO / K PUNCH"),28,783,10,Muted);
             if(game.User!=null) {
                 TextAt("ENERGY "+(int)(game.User.Fatigue*100)+"% / FOULS "+game.User.Box.Fouls,848,759,10,Muted);
             }

@@ -4,9 +4,13 @@ Verified locally on Windows on October 23, 2026 using the installed x64 .NET Fra
 
 ## Results
 
-- **413 engine assertions, zero failures.**
+- **463 engine assertions, zero failures.**
 - Fifteen menu/rendering paths passed.
 - The UI gameplay flow passed: keyboard movement → hold/release shot meter → ball flight → pause → saved match reload.
+- The arcade UI flow passed: jump → spin → step-back → called cut → punch → dunk through their actual key bindings.
+- Camera checks verified smoothing, upcourt travel, reversal/lateral tracking and action framing; backcourt, frontcourt and dunk screenshots were inspected.
+- Arcade checks covered dunk/alley scoring, jump height, move cooldowns, steals/reach-in fouls, one block credit per jump, both referee outcomes, two shots plus retained possession, second-flagrant ejection with a real reserve, and non-shot loose-ball statistics.
+- Offline audio checks verified sustained stereo crowd, overlapping voices, bounded PCM, focus/mute behavior, pause ducking, and independent crowd/effects controls. Physical audio output still needs human listening tests.
 - Real-time CPU-versus-CPU match reached an untied final.
 - Six consecutive seasons completed their regular schedules, series playoffs, contract processing and drafts while retaining legal club rosters/payrolls and valid lineup identities.
 - A perfect three-point contest produced 30 points from 25 shots.
@@ -42,12 +46,12 @@ They do not replace extended human gameplay or physical Xbox/controller and audi
 
 REA static analysis succeeded on the locally rebuilt Downfield source assembly. REA process capture could not run because the adapter explicitly does not support native Windows PTY cleanup verification. Normal Windows execution provided the runtime results above; this is documented in the retained evidence.
 
-## Corrected-name release SHA-256
+## Hyper arcade release SHA-256
 
 | Artifact | SHA-256 |
 |---|---|
-| `play me/Upcourt.exe` | `D5295F15FAA412488C25D19651263D0AFE0BA1EAFC5127B790C8AC99B6317228` |
-| `play me/Install Upcourt.exe` | `CC9C566DFF19F2FC831142AE72AF670DA516E855490820054D1162570C024933` |
-| `play me/Upcourt-Windows.zip` | `080BA1F01CDC4FD33487709C74C0EEE76E85EACF1875228E1CB9951E36315471` |
+| `play me/Upcourt.exe` | `BAEC6A94ABFB2CBEC3901389BDC72175CF511FFB73E73CFA30DD254418C1C07C` |
+| `play me/Install Upcourt.exe` | `33B411EA864177BCA80D52865E1BD35FCBF2FA7B295AD5EB7D8BB7B0897A3203` |
+| `play me/Upcourt-Windows.zip` | `7C7E8C5D64D786BE7DFA5CC7B3E236B6224F2E8F0C1D33798667DE64D5D259FE` |
 
 Rebuilding can change compiler timestamps and ZIP metadata, so future builds may have different hashes. `verify-release.ps1` checks the artifacts against the current local build instead of hard-coding this historical table.
