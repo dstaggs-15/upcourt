@@ -16,7 +16,7 @@ namespace Upcourt  {
                     if(args.Length>1&&args[0]=="--screenshot") {
                         form.Show();
                         Application.DoEvents();
-                        form.Preview(Path.GetFullPath(args[1]),args.Length>2&&(args[2]=="court"||args[2]=="attack"||args[2]=="dunk"),args.Length>2?args[2]:"");
+                        form.Preview(Path.GetFullPath(args[1]),args.Length>2&&(args[2]=="court"||args[2]=="attack"||args[2]=="dunk"||args[2]=="controller"),args.Length>2?args[2]:"");
                         return 0;
                     }
 #endif

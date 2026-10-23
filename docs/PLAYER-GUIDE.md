@@ -62,7 +62,15 @@ A caught hit is a **flagrant foul: two free throws plus the victim team's posses
 
 Steals, blocks, ankle breakers and baskets build your team's heat. Buckets reset the other team's scoring combo and reduce their heat. At full heat, your team is **on fire for twelve seconds**, gaining movement and shooting bonuses with pixel flames and louder reactions. Heat fades when you stop making plays. The bonus never changes the points awarded for a basket.
 
-The crowd now has a continuous stereo arena bed. Scores, dunks, blocks, misses and caught/uncaught hits trigger layered cheers, roars, gasps, groans or boos. Bounce, swish, sneaker, impact and whistle sounds play at the same time instead of interrupting the crowd. Options has separate master, crowd and court-effects levels. M/View mutes everything; leaving the window silences playback, and pausing lowers the ambience.
+The crowd uses the same real CC0 stadium, cheer, applause and groan recordings as Downfield. A quiet, evolving stereo bed continues underneath reactions and short bounce, swish, rim, impact and whistle sounds. The old synthetic crowd, rising action tones and repeating electronic squeak have been removed. Options has separate master, crowd and court-effects levels plus **Preview Real Crowd**. M/View mutes everything; leaving the window silences playback, and pausing lowers the ambience.
+
+## Controller diagram and binding editor
+
+Open **Pause → Controls / Xbox Diagram**. The labeled Xbox drawing and the list beside it display your actual current bindings. **Keyboard Binds** opens the key editor; **Xbox Binds** opens controller capture. You can also open this screen through Options.
+
+For keyboard controls, select an action and press its new key. Conflicts swap, including sprint/timeout/pause/mute utility keys. Escape cancels capture. For Xbox controls, select an action, release the selection button, then press the new button. Hold LT or RT while pressing a face/shoulder button to bind a combination; press and release a trigger alone to bind that trigger. Menu or Escape cancels controller capture. Primary action conflicts swap. The lob modifier can intentionally share a shoulder button with jump.
+
+Controller movement can use the left or right stick, and movement Y can be inverted. Keyboard and Xbox each have a separate **Reset Defaults** option. Changes save immediately and update both the diagram and on-court control hints. Menu navigation remains A/B and D-pad, with Menu pause and View mute fixed; your gameplay remaps cannot strand you in a menu.
 
 Pause → Defense cycles man-to-man, 2–3 zone and full-court pressure for your team. Man defense follows matchups, zone uses five floor anchors, and pressure follows opponents tightly across the court. Opposing defenders use their own matchups and lane reactions.
 

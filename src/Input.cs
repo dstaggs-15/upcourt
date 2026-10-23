@@ -20,9 +20,13 @@ namespace Upcourt  {
         public HashSet<Keys> HeldKeys=new HashSet<Keys>();
         HashSet<Keys> prior=new HashSet<Keys>();
         int buttons,old,provider=4;
-        public bool Connected,HadPad;
+        public bool Connected,HadPad;public Settings Config;
+        public int RawButtons{get{return buttons;}}public int PriorRawButtons{get{return old;}}
         public float MX,MY;
         public bool Sprint,UsesPad,Trick;
+#if UPCOURT_TESTS
+        public int? TestPadButtons;
+#endif
         uint Read(uint index,out State state) {
             try {
                 return provider==4?Read4(index,out state):provider==3?Read3(index,out state):Read9(index,out state);
@@ -54,17 +58,23 @@ namespace Upcourt  {
             MX=MY=0;
             Connected=false;
             Sprint=HeldKeys.Contains(Keys.ShiftKey);Trick=false;
+#if UPCOURT_TESTS
+            if(TestPadButtons.HasValue){buttons=TestPadButtons.Value;Connected=true;return;}
+#endif
             State s;
             for(uint i=0;i<4;i++)if(Read(i,out s)==0) {
                 Connected=true;
-                buttons=s.Pad.Buttons;
-                MX=Axis(s.Pad.LX);
-                MY=-Axis(s.Pad.LY);
+                buttons=s.Pad.Buttons|(s.Pad.LT>100?0x10000:0)|(s.Pad.RT>100?0x20000:0);
+                bool swap=Config!=null&&Config.SwapSticks;MX=Axis(swap?s.Pad.RX:s.Pad.LX);
+                MY=-Axis(swap?s.Pad.RY:s.Pad.LY)*(Config!=null&&Config.InvertMoveY?-1:1);
                 Sprint|=s.Pad.RT>100;Trick=s.Pad.LT>100;
                 if(buttons!=old||Math.Abs(MX)+Math.Abs(MY)>.1f)UsesPad=true;
                 break;
             }
         }
+        public bool PadActionPress(Settings settings,int action){return ControlBindings.Active(settings,action,buttons)&&!ControlBindings.Active(settings,action,old);}
+        public bool PadActionHeld(Settings settings,int action){return ControlBindings.Active(settings,action,buttons);}
+        public bool PadActionRelease(Settings settings,int action){return ControlBindings.Matches(settings.PadBindings[action],old)&&!ControlBindings.Matches(settings.PadBindings[action],buttons);}
         public bool Key(Keys key) {
             return HeldKeys.Contains(key);
         }

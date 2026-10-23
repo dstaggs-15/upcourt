@@ -110,6 +110,7 @@ namespace Upcourt  {
             }
             );
             Test("hyper arcade, follow camera, penalties, saves and stereo crowd",()=>ArcadeTests.Run(Check));
+            Test("recorded audio assets and customizable controls",()=>ControlsAudioTests.Run(Check));
             Console.WriteLine(assertions+" assertions / "+failures+" failures");
             return failures==0?0:1;
         }
@@ -124,7 +125,7 @@ namespace Upcourt  {
                 var flags=BindingFlags.NonPublic|BindingFlags.Instance;
                 typeof(GameForm).GetField("league",flags).SetValue(form,League.Create(0));
                 foreach(string screen in new[] {
-                    "home","office","roster","schedule","standings","playoffs","agents","training","business","career","history","leaders","controls","help","designer"
+                    "home","office","roster","schedule","standings","playoffs","agents","training","business","career","history","leaders","controls","padbindings","controller","help","designer"
                 }
                 ) {
                     try {
@@ -140,7 +141,7 @@ namespace Upcourt  {
                         Console.WriteLine("FAIL: UI "+screen+" / "+e);
                     }
                 }
-                errors+=UiFlow(form,flags);errors+=ArcadeUiFlow(form,flags);
+                errors+=UiFlow(form,flags);errors+=ArcadeUiFlow(form,flags);errors+=ControlsAudioTests.Ui(form,flags);
             }
             return errors;
         }

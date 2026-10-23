@@ -21,7 +21,7 @@ Or get the **[portable EXE](https://github.com/dstaggs-15/upcourt/raw/refs/heads
 - **Jump whenever you want** to clear traffic, attack the rim, win boards or reject a shot. Steals now create a burst of fast-break speed.
 - **Punches with referee risk:** land a cartoon hit to knock an opponent down, but a caught punch awards two free throws and possession. Two caught punches eject the offender. Referee position and blocked sightlines affect whether the hit is seen; CPU defenders can occasionally try a cheap shot too.
 - **Heat and combos:** steals, blocks, ankle breakers and buckets fill your heat meter. Earn twelve seconds on fire for faster movement and stronger shooting, with flames, impact shake and big-play callouts.
-- **Continuous stereo crowd noise** with cheers, boos, gasps and roars mixed under dribbles, sneakers, swishes, rim slams, hits and whistles. Separate crowd and effects volume controls are in Options.
+- **Real recorded crowds, matching Downfield:** quiet stadium ambience, cheers, applause and groans, mixed under short dribbles, swishes, rim slams, hits and whistles. The artificial crowd hiss, rising action tones and automatic electronic squeak loop have been removed. Options includes separate volume controls and **Preview Real Crowd**.
 - Play **both offense and defense** in five-on-five basketball.
 - Hold and release to shoot. A visible meter reports timing, contest level and estimated make probability. Close finishes use an earlier release point.
 - Make two-pointers, corner threes and shots from behind the arc. Layups and dunk attempts use finishing skill.
@@ -89,7 +89,11 @@ The [player and franchise guide](docs/PLAYER-GUIDE.md) explains the rules, econo
 | Mute | M | View |
 | Fullscreen | F11 | Options menu |
 
-Menus support mouse clicks, arrows/Enter/Escape and D-pad/A/B. Page through long lists with Page Up/Page Down or LB/RB. Keyboard bindings can be changed in Options; conflicting keys swap.
+Menus support mouse clicks, arrows/Enter/Escape and D-pad/A/B. Page through long lists with Page Up/Page Down or LB/RB.
+
+Open **Pause → Controls / Xbox Diagram** to see the labeled controller with your current assignments. From there, choose **Keyboard Binds** or **Xbox Binds**. Keyboard keys and Xbox actions can be reassigned; conflicting assignments swap. Xbox capture supports LT/RT combinations, individual triggers, shoulders, face buttons, D-pad and stick clicks. Stick swapping, movement-Y inversion and separate reset-defaults actions are included. Menu navigation stays fixed so a remap cannot trap you in the editor. The diagram and gameplay hints follow your saved bindings.
+
+![Pause-menu Xbox diagram and current bindings](docs/controller.png)
 
 ## Saves
 
@@ -126,9 +130,9 @@ The installer build verifies a fresh installation, reinstall and SHA-256 identit
 - `src/League.cs`: rosters, finances, trades, schedule, postseason, career and draft.
 - `src/GameForm.cs`, `Rendering.cs`, `PlayDesigner.cs`: pixel menus, arena and route editor.
 - `src/PixelArt.cs`: Downfield's font and adapted original player renderer.
-- `src/Persistence.cs`, `Input.cs`: saves and keyboard/XInput.
-- `src/Audio.cs`, `StadiumMixer.cs`, `ArcadeSounds.cs`, `WaveOutput.cs`: continuous stereo crowd and layered court effects using Downfield's native PCM-output approach.
+- `src/Persistence.cs`, `Input.cs`, `ControlBindings.cs`, `ControlsUI.cs`: saves, keyboard/XInput, remapping and the pause controller diagram.
+- `src/Audio.cs`, `CrowdRecordings.cs`, `StadiumMixer.cs`, `ArcadeSounds.cs`, `WaveOutput.cs`: embedded recorded crowds and short court effects using Downfield's native PCM-output approach.
 
-This is an arcade rule set. Court boundaries constrain movement; it does not model every professional rule, a full referee/out-of-bounds system, online multiplayer or local versus play. Match simulation is a separate accelerated possession model. Sound is synthesized; Downfield's recorded football crowds are not bundled. Automated checks cover the implemented flows; physical controller feel, long human play sessions and audio hardware still need playtesting.
+This is an arcade rule set. Court boundaries constrain movement; it does not model every professional rule, a full referee/out-of-bounds system, online multiplayer or local versus play. Match simulation is a separate accelerated possession model. Crowd recordings are CC0; sources and processing are documented in [audio/CREDITS.md](audio/CREDITS.md). Court effects are short synthesized transients. Automated checks cover the implemented flows and verify the actual embedded recording identities; physical controller feel and subjective audio quality still need human playtesting.
 
 Original Downfield code/art attribution and the MIT license are retained in [LICENSE.txt](LICENSE.txt). New basketball code is MIT licensed too.

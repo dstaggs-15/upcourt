@@ -21,7 +21,7 @@ namespace Upcourt  {
         readonly Timer timer=new Timer();
         readonly Stopwatch watch=new Stopwatch();
         readonly Audio audio=new Audio();
-        readonly CourtCamera camera=new CourtCamera();Match cameraMatch;float nextBounce,nextSqueak;
+        readonly CourtCamera camera=new CourtCamera();Match cameraMatch;float nextBounce;
         readonly Bitmap frame=new Bitmap(640,400);
         SaveData data;
         League league;
@@ -94,10 +94,7 @@ namespace Upcourt  {
             }
             if(binding>=0) {
                 if(e.KeyCode!=Keys.Escape) {
-                    string key=e.KeyCode.ToString();
-                    int other=Array.IndexOf(data.Settings.Keys,key);
-                    if(other>=0)data.Settings.Keys[other]=data.Settings.Keys[binding];
-                    data.Settings.Keys[binding]=key;
+                    ControlBindings.BindKey(data.Settings,binding,e.KeyCode);input.Clear();input.HeldKeys.Add(e.KeyCode);menuRelease=true;
                     Save();
                 }
                 binding=-1;
@@ -131,6 +128,7 @@ namespace Upcourt  {
             }
         }
         void Open(string next) {
+            if(next!="game"&&game!=null){game.Charging=false;game.Charge=0;}
             screen=next;
             selected=0;
             menuRepeat=12;
@@ -155,7 +153,7 @@ namespace Upcourt  {
                 return;
             }
             if(screen=="office"||screen=="setup"||screen=="options"||screen=="help")Open("home");
-            else if(screen=="controls")Open("options");
+            else if(screen=="controls"||screen=="padbindings")Open("controller");else if(screen=="controller")Open(controlsReturn);
             else if(screen=="player")Open("roster");
             else if(screen=="subin")Open("subs");
             else if(screen=="tradeplayers")Open("tradeclubs");
@@ -199,14 +197,15 @@ namespace Upcourt  {
             float dt=(float)Math.Min(.04,watch.Elapsed.TotalSeconds-last);
             last=watch.Elapsed.TotalSeconds;
             time+=dt;
-            input.Poll();
+            input.Config=data.Settings;input.Poll();
+            if(CaptureControls())return;
             audio.SetContext(game!=null&&(screen=="game"||screen=="pause")&&(!game.Practice||game.Contest),ContainsFocus,screen=="pause");
             if(typed!=null||binding>=0) {
                 input.EndFrame();
                 Invalidate();
                 return;
             }
-            if(input.Fresh(Keys.M)||input.Press(Input.View)) {
+            if(input.Fresh(ControlBindings.Utility(data.Settings,3))||input.Press(Input.View)) {
                 data.Settings.Muted=!data.Settings.Muted;
                 audio.Muted=data.Settings.Muted;
                 Save();
@@ -216,7 +215,7 @@ namespace Upcourt  {
                     Open("pause");
                     notice="Controller disconnected. Keyboard controls are available.";
                 }
-                else if(input.Fresh(Keys.Escape)||input.Press(Input.Start)) {
+                else if(input.Fresh(ControlBindings.Utility(data.Settings,2))||input.Press(Input.Start)) {
                     Open("pause");
                 }
                 else if(game.Over) {
@@ -224,39 +223,34 @@ namespace Upcourt  {
                     if(input.Fresh(Keys.Enter)||input.Press(Input.A))Open("box");
                 }
                 else {
-                    Settings s=data.Settings;
+                    Settings s=data.Settings;input.Sprint=input.Key(ControlBindings.Utility(s,0))||input.PadActionHeld(s,12);
                     float mx=input.MX+(input.Action(s,3)?1:0)-(input.Action(s,2)?1:0),my=input.MY+(input.Action(s,1)?1:0)-(input.Action(s,0)?1:0);
                     bool offense=game.UserSide==game.Possession;
-                    if(input.ActionPress(s,4)||input.Press(Input.X)) {
-                        if(offense&&input.Trick)game.DunkOrLob();
-                        else if(offense||game.Phase=="freethrow")game.StartShot();
-                        else game.Block();
-                    }
-                    if(input.ActionRelease(s,4)||input.Release(Input.X))game.ReleaseShot();
-                    if(input.ActionPress(s,5)||input.Press(Input.A)) {
-                        if(offense&&input.Trick)game.CallCut();
-                        else if(offense)game.Pass(-1,input.Key(Keys.ControlKey)||input.Hold(Input.LB));
-                        else game.Steal();
-                    }
-                    if(input.ActionPress(s,6)||input.Press(Input.B)){if(input.Trick)game.StepBack();else game.SwitchNearest();}
-                    if(input.ActionPress(s,7)||input.Press(Input.Y)){if(input.Trick)game.Spin();else game.Skill();}
-                    if(input.ActionPress(s,8)||input.Press(Input.RB)){if(input.Trick)game.Punch();else game.Screen();}
-                    if(input.ActionPress(s,15)||input.Press(Input.LB)&&!input.Hold(Input.A))game.Jump();
-                    if(input.ActionPress(s,16))game.Spin();if(input.ActionPress(s,17))game.StepBack();
-                    if(input.ActionPress(s,18))game.DunkOrLob();if(input.ActionPress(s,19))game.Punch();if(input.ActionPress(s,20))game.CallCut();
+                    if(input.ActionPress(s,4)||input.PadActionPress(s,0)){if(offense||game.Phase=="freethrow")game.StartShot();else game.Block();}
+                    if(input.ActionRelease(s,4)||input.PadActionRelease(s,0))game.ReleaseShot();
+                    if(input.ActionPress(s,5)||input.PadActionPress(s,1)){if(offense)game.Pass(-1,input.Key(Keys.ControlKey)||input.PadActionHeld(s,13));else game.Steal();}
+                    if(input.ActionPress(s,6)||input.PadActionPress(s,2))game.SwitchNearest();
+                    if(input.ActionPress(s,7)||input.PadActionPress(s,3))game.Skill();
+                    if(input.ActionPress(s,8)||input.PadActionPress(s,4))game.Screen();
+                    if(input.ActionPress(s,15)||input.PadActionPress(s,5)&&!input.PadActionHeld(s,1))game.Jump();
+                    if(input.ActionPress(s,16)||input.PadActionPress(s,6))game.Spin();
+                    if(input.ActionPress(s,17)||input.PadActionPress(s,7))game.StepBack();
+                    if(input.ActionPress(s,18)||input.PadActionPress(s,8))game.DunkOrLob();
+                    if(input.ActionPress(s,19)||input.PadActionPress(s,9))game.Punch();
+                    if(input.ActionPress(s,20)||input.PadActionPress(s,10))game.CallCut();
                     for(int n=0;n<5;n++)if(input.ActionPress(s,9+n))game.Pass(n,input.Key(Keys.ControlKey));
-                    if(input.ActionPress(s,14)) {
+                    if(input.ActionPress(s,14)||input.PadActionPress(s,11)) {
                         Open("calls");
                         return;
                     }
-                    if(input.Fresh(Keys.T))game.Timeout();
+                    if(input.Fresh(ControlBindings.Utility(s,1)))game.Timeout();
                     int before=game.HomeScore+game.AwayScore;
                     string prior=game.Message;
                     game.Update(dt,-my,mx,input.Sprint);
                     if(cameraMatch!=game){camera.Initialized=false;cameraMatch=game;}camera.Follow(game,dt);
                     while(game.Sounds.Count>0)audio.Cue(game.Sounds.Dequeue());
                     if(game.Phase=="live"&&game.BallOwner!=null&&game.BallOwner.JumpTime<=0&&time>nextBounce){audio.Cue("bounce");nextBounce=time+.38f;}
-                    if(game.User!=null&&Math.Abs(game.User.VX)+Math.Abs(game.User.VY)>12&&time>nextSqueak){audio.Cue("squeak");nextSqueak=time+.7f;}
+
                     if(game.Message!=prior&&(game.Message.Contains("PERIOD")||game.Message.Contains("HALFTIME")||game.Over))audio.Cue("buzzer");
                     if(game.Over)Complete();
                     if(time-saveAt>15) {
@@ -619,6 +613,7 @@ namespace Upcourt  {
                     pausedForFocus=false;Open("game");
                 }
                 );
+                Add("CONTROLS / XBOX DIAGRAM","VIEW OR CHANGE YOUR CURRENT BINDINGS",()=>OpenControls("pause"));
                 Add("PLAYBOOK","CALL A PLAY / CREATE YOUR OWN",()=>Open("calls"));
                 Add("SUBSTITUTIONS","AVAILABLE AT A STOPPAGE",()=>Open("subs"));
                 Add("TIMEOUT",game.Timeouts[game.UserSide]+" REMAIN / MUST HAVE POSSESSION",()=> {
@@ -720,17 +715,25 @@ namespace Upcourt  {
                     s.Volume=(s.Volume+20)%120;audio.Volume=s.Volume;Save();
                 }
                 );
+                Add("PREVIEW REAL CROWD","PLAY A RECORDED CROWD SAMPLE",()=>audio.Cue("preview"));
                 Add("CROWD / "+s.CrowdVolume+"%","CONTINUOUS ARENA / CHEERS / BOOS",()=>{s.CrowdVolume=(s.CrowdVolume+25)%125;audio.CrowdVolume=s.CrowdVolume;Save();});
-                Add("COURT EFFECTS / "+s.EffectsVolume+"%","BOUNCE / SQUEAK / DUNK / WHISTLE",()=>{s.EffectsVolume=(s.EffectsVolume+20)%120;audio.EffectsVolume=s.EffectsVolume;Save();});
-                Add("KEYBOARD BINDINGS","CONFLICTING KEYS SWAP",()=>Open("controls"));
+                Add("COURT EFFECTS / "+s.EffectsVolume+"%","BOUNCE / RIM / IMPACT / WHISTLE",()=>{s.EffectsVolume=(s.EffectsVolume+20)%120;audio.EffectsVolume=s.EffectsVolume;Save();});
+                Add("CONTROLS / XBOX DIAGRAM","KEYBOARD / CONTROLLER / RESET DEFAULTS",()=>OpenControls("options"));
                 Add("FULLSCREEN","F11 ALSO TOGGLES",()=>ToggleFull());
                 Add("CREDITS / LICENSE","DOWNFIELD ART / MIT SOURCE",()=>{using(var stream=typeof(GameForm).Assembly.GetManifestResourceStream("Upcourt.License"))using(var reader=new System.IO.StreamReader(stream))MessageBox.Show(reader.ReadToEnd(),"Upcourt / License");});
             }
+            else if(screen=="controller") {
+                Add("KEYBOARD BINDS","",()=>Open("controls"));Add("XBOX BINDS","",()=>Open("padbindings"));Add("SWAP STICKS","",()=>{data.Settings.SwapSticks=!data.Settings.SwapSticks;Save();});Add("BACK","",()=>Open(controlsReturn));
+            }
             else if(screen=="controls") {
-                for(int i=0;i<Settings.Actions.Length;i++) {
-                    int action=i;
-                    Add(Settings.Actions[i]+" / "+data.Settings.Keys[i],"SELECT THEN PRESS A KEY / ESC CANCELS",()=>binding=action);
-                }
+                for(int i=0;i<Settings.Actions.Length+ControlBindings.UtilityActions.Length;i++){int action=i;string name=i<Settings.Actions.Length?Settings.Actions[i]:ControlBindings.UtilityActions[i-Settings.Actions.Length];Add(name+" / "+ControlBindings.KeyAt(data.Settings,i),"SELECT THEN PRESS A KEY / ESC CANCELS",()=>binding=action);}
+                Add("RESET KEYBOARD DEFAULTS","RESTORES KEYBOARD ONLY",()=>{ControlBindings.ResetKeyboard(data.Settings);Save();notice="Keyboard bindings reset.";});
+            }
+            else if(screen=="padbindings") {
+                for(int i=0;i<ControlBindings.PadActions.Length;i++){int action=i;Add(ControlBindings.PadActions[i]+" / "+data.Settings.PadBindings[i],"SELECT / PRESS BUTTON OR HOLD LT/RT + BUTTON",()=>StartPadCapture(action));}
+                Add("MOVEMENT STICK / "+(data.Settings.SwapSticks?"RIGHT":"LEFT"),"SELECT TO SWAP STICKS",()=>{data.Settings.SwapSticks=!data.Settings.SwapSticks;Save();});
+                Add("INVERT MOVEMENT Y / "+(data.Settings.InvertMoveY?"ON":"OFF"),"SELECT TO TOGGLE",()=>{data.Settings.InvertMoveY=!data.Settings.InvertMoveY;Save();});
+                Add("RESET XBOX DEFAULTS","RESTORES CONTROLLER ONLY",()=>{ControlBindings.ResetPad(data.Settings);Save();notice="Xbox bindings reset.";});
             }
             else if(screen=="help") {
                 string[,] rows= {
@@ -838,8 +841,9 @@ namespace Upcourt  {
                 League l=League.Create(0);
                 game=Match.Create(l,0,2,0,data.Settings,-1);
                 game.Phase="live";
+                if(moment=="controller"){screen="controller";}
                 if(moment=="attack"||moment=="dunk"){game.User.X=83;game.User.Y=25;game.BallX=83;game.BallY=25;foreach(var actor in game.Roster.Where(a=>a.OnCourt&&a!=game.User)){actor.X=actor.Side==0?68+actor.Slot*3:78+actor.Slot*2;actor.Y=5+actor.Slot*9;}if(moment=="dunk"){game.Hype(0,100,"ON FIRE");game.DunkOrLob();for(int i=0;i<9;i++)game.Update(.03f,0,0,false);}camera.Initialized=false;camera.Follow(game,0);}
-                screen="game";
+                screen=moment=="controller"?"controller":"game";
             }
             else screen="home";
             using(Bitmap b=new Bitmap(1280,800)) {

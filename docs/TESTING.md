@@ -4,13 +4,15 @@ Verified locally on Windows on October 23, 2026 using the installed x64 .NET Fra
 
 ## Results
 
-- **463 engine assertions, zero failures.**
-- Fifteen menu/rendering paths passed.
+- **492 engine assertions, zero failures.**
+- Seventeen menu/rendering paths passed, including the controller diagram and Xbox binding editor.
 - The UI gameplay flow passed: keyboard movement → hold/release shot meter → ball flight → pause → saved match reload.
 - The arcade UI flow passed: jump → spin → step-back → called cut → punch → dunk through their actual key bindings.
+- The controls UI flow passed: pause diagram → controller capture → conflict swap → shoot/release using the remapped controller state → keyboard capture → save/reload → return to pause. Hardware-free controller state injection is confined to the test build.
 - Camera checks verified smoothing, upcourt travel, reversal/lateral tracking and action framing; backcourt, frontcourt and dunk screenshots were inspected.
 - Arcade checks covered dunk/alley scoring, jump height, move cooldowns, steals/reach-in fouls, one block credit per jump, both referee outcomes, two shots plus retained possession, second-flagrant ejection with a real reserve, and non-shot loose-ball statistics.
 - Offline audio checks verified sustained stereo crowd, overlapping voices, bounded PCM, focus/mute behavior, pause ducking, and independent crowd/effects controls. Physical audio output still needs human listening tests.
+- All four embedded crowd WAVs match the SHA-256 hashes of the sourced Downfield recordings. The decoder returns the real sample data, the ambience is a 35-second recorded blend, and routine move/squeak cues no longer generate tones. These checks establish source and signal integrity, not a subjective listening review; Options includes a crowd preview for human review.
 - Real-time CPU-versus-CPU match reached an untied final.
 - Six consecutive seasons completed their regular schedules, series playoffs, contract processing and drafts while retaining legal club rosters/payrolls and valid lineup identities.
 - A perfect three-point contest produced 30 points from 25 shots.
@@ -46,12 +48,12 @@ They do not replace extended human gameplay or physical Xbox/controller and audi
 
 REA static analysis succeeded on the locally rebuilt Downfield source assembly. REA process capture could not run because the adapter explicitly does not support native Windows PTY cleanup verification. Normal Windows execution provided the runtime results above; this is documented in the retained evidence.
 
-## Hyper arcade release SHA-256
+## Recorded-crowd and controls release SHA-256
 
 | Artifact | SHA-256 |
 |---|---|
-| `play me/Upcourt.exe` | `BAEC6A94ABFB2CBEC3901389BDC72175CF511FFB73E73CFA30DD254418C1C07C` |
-| `play me/Install Upcourt.exe` | `33B411EA864177BCA80D52865E1BD35FCBF2FA7B295AD5EB7D8BB7B0897A3203` |
-| `play me/Upcourt-Windows.zip` | `7C7E8C5D64D786BE7DFA5CC7B3E236B6224F2E8F0C1D33798667DE64D5D259FE` |
+| `play me/Upcourt.exe` | `0ADAE54CB68B46060BF103E42C152C5CE8A2919F865E58488DF423900CB63B7A` |
+| `play me/Install Upcourt.exe` | `2323D3F50D2F296483F27E3ACCF5FA08DAA12D8E6847368EF0AB5819E9ECB6D4` |
+| `play me/Upcourt-Windows.zip` | `379F4E3843D36B9B5CFB07D48FB1730A192C2542D8DD1EFC88A152CF939CF886` |
 
 Rebuilding can change compiler timestamps and ZIP metadata, so future builds may have different hashes. `verify-release.ps1` checks the artifacts against the current local build instead of hard-coding this historical table.

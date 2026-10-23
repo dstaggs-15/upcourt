@@ -12,7 +12,8 @@ Upcourt uses C# and Windows Forms with System.Drawing. The build deliberately fo
 | `League.cs` | Schedule, caps, transactions, development, CPU clubs, results, business, postseason, careers and offseason |
 | `Persistence.cs` | Schema checks, XML serialization, atomic replacement and backup recovery |
 | `Input.cs` | Keyboard edge state and XInput fallback/dead-zone polling |
-| `Audio.cs`, `StadiumMixer.cs`, `ArcadeSounds.cs`, `WaveOutput.cs` | One continuous stereo PCM stream with synthesized crowd bed, overlapping reactions/effects and Downfield's adapted native Windows output buffers |
+| `ControlBindings.cs`, `ControlsUI.cs` | Saved keyboard/controller mappings, combo priority, capture, conflict swaps, resets and the live pause controller diagram |
+| `Audio.cs`, `CrowdRecordings.cs`, `StadiumMixer.cs`, `ArcadeSounds.cs`, `WaveOutput.cs` | One continuous stereo PCM stream with real recorded crowd bed/reactions, short court effects and Downfield's adapted native Windows output buffers |
 | `GameForm.cs` | Mode/navigation orchestration, action menus, settings, input routing and save cadence |
 | `Rendering.cs` | Logical 1280×800 pixel scenes on a 640×400 backing frame; perspective arena, HUD and menus |
 | `PixelArt.cs` | Original Downfield glyphs and basketball adaptation of its procedural sprite renderer |
@@ -20,6 +21,7 @@ Upcourt uses C# and Windows Forms with System.Drawing. The build deliberately fo
 | `Program.cs` | Native game entry point and test-only commands |
 | `Tests.cs` | Engine, league, persistence and UI integration checks |
 | `ArcadeTests.cs` | Moving camera, moves/finishes, steals/blocks, both referee outcomes, ejection substitutions, compatibility and offline stereo-mixer checks |
+| `ControlsAudioTests.cs` | Real recording hashes, silent routine-move cues, mapping capture/dispatch, swaps/resets, persistence and pause-menu UI flow |
 | `installer/Installer.cs` | Per-user payload installer and desktop shortcut |
 
 ## Match lifecycle
@@ -36,7 +38,9 @@ An airborne shot retains its originating height and ends at rim height. Non-shot
 
 The camera works in court coordinates and applies the same projection to floor lines, hoops, actors, ball and shadows. It smooths toward the ball with a small velocity lead and adjusts zoom for airborne shots. Screen UI and crowd rows stay fixed. Court rendering is clipped to the play viewport; big-hit shake affects world geometry without shaking menus or scores.
 
-The mixer combines ambience and short voices under a lock, renders bounded stereo PCM and feeds three reusable native Windows buffers on a background thread. Effects never replace the crowd bed. Master/crowd/effects gains are separate; focus loss silences output and pause ducks ambience. The crowd is synthesized rather than copied from Downfield's recorded football assets.
+The mixer combines ambience and short voices under a lock, renders bounded stereo PCM and feeds three reusable native Windows buffers on a background thread. Effects never replace the crowd bed. Master/crowd/effects gains are separate; focus loss silences output and pause ducks ambience. Following audio feedback, the synthetic crowd was replaced with the exact four CC0 WAV assets used by Downfield. Its quiet 35-second filtered/blended bed and faded recorded reactions are adapted in `CrowdRecordings.cs`. Audio resources are compiled into both the game and test assembly. Tests check their SHA-256 identities to prevent synthetic fallback. Routine jump/cut/pass/squeak cues are silent; remaining court effects are short fixed-frequency transients.
+
+Controller gameplay uses saved action masks rather than hard-coded button branches. A matching LT/RT combination takes priority over its unmodified face/shoulder action, and release detection preserves hold/release shooting. Menu A/B, Menu pause and View mute remain fixed. Capture waits for selection buttons to be released and suppresses menu activation until a newly bound input is released. Keyboard conflicts swap across gameplay and utility keys. Diagram legends and live hints read the same settings as dispatch.
 
 When a match ends, the form invokes `League.Finish` only if a league fixture exists. That method verifies identity/current round/unplayed state/untied final, settles the user fixture and simulates the other fixtures, then advances the league. `Match.ResultCommitted` also prevents repeated UI-side submission. The league's fixture guard remains the authoritative duplicate-result protection.
 

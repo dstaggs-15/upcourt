@@ -168,6 +168,8 @@ namespace Upcourt  {
         public int Version=1,Difficulty=1,QuarterSeconds=90,Volume=60;
         public bool AutoSubs=true,ShotAssist=false,Muted=false;
         public int CrowdVolume=75,EffectsVolume=85;
+        public string[] PadBindings=(string[])ControlBindings.PadDefaults.Clone(),UtilityKeys=(string[])ControlBindings.UtilityDefaults.Clone();
+        public bool SwapSticks,InvertMoveY;
         public string[] Keys= {
             "W","S","A","D","Space","E","Q","F","R","D1","D2","D3","D4","D5","P","J","G","H","V","K","C"
         };

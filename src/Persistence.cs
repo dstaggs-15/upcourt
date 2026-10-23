@@ -16,6 +16,7 @@ namespace Upcourt  {
         public static string LoadNotice="";
         public static void Validate(SaveData d) {
             if(d==null||d.Version!=1||d.Settings==null||d.CustomPlays==null||d.CustomPlays.Count>40)throw new InvalidDataException("Unsupported save version or invalid playbook.");
+            ControlBindings.Ensure(d.Settings);
             if(d.Settings.Keys!=null&&d.Settings.Keys.Length==15){var keys=new Settings().Keys;Array.Copy(d.Settings.Keys,keys,15);d.Settings.Keys=keys;}
             if(d.Settings.Keys==null||d.Settings.Keys.Length!=Settings.Actions.Length)throw new InvalidDataException("Invalid control bindings.");
             if(d.Settings.QuarterSeconds<30||d.Settings.QuarterSeconds>600)throw new InvalidDataException("Invalid period length.");

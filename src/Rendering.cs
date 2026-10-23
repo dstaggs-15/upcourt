@@ -49,7 +49,7 @@ namespace Upcourt  {
                 g.InterpolationMode=InterpolationMode.NearestNeighbor;
                 if(screen=="game")DrawGame();
                 else if(screen=="designer")DrawDesigner();
-                else if(screen=="home")DrawHome();
+                else if(screen=="home")DrawHome();else if(screen=="controller"){BuildMenu();DrawControllerDiagram();}
                 else DrawMenu();
                 if(typed!=null) {
                     Panel(245,260,790,220);
@@ -57,6 +57,7 @@ namespace Upcourt  {
                     TextAt(Clip(typing,22)+((int)(time*2)%2==0?"_":""),280,351,24,White);
                     Center("TYPE / ENTER SAVE / ESC CANCEL",430,12,Mint);
                 }
+                DrawPadCapture();
                 if(binding>=0) {
                     Panel(245,290,790,160);
                     Center("PRESS A KEY",320,24,Gold);
@@ -342,7 +343,7 @@ namespace Upcourt  {
             Rect(0,722,1280,78,Ink);
             TextAt(Clip(game.Message,95),28,733,12,Gold);
             TextAt(Clip(game.ShotFeedback,60),28,758,10,Mint);
-            TextAt(input.UsesPad?(game.Possession==game.UserSide?"X SHOT / A PASS / Y CROSS / LT+X JAM / LT+RB PUNCH / LB JUMP":"A STEAL / X BLOCK / B SWITCH / LB JUMP / LT+RB PUNCH"):(game.Possession==game.UserSide?"SPACE SHOT / E PASS / J JUMP / G SPIN / H STEP / V JAM / K PUNCH / C CUT":"E STEAL / SPACE BLOCK / J JUMP / Q SWITCH / SHIFT TURBO / K PUNCH"),28,783,10,Muted);
+            TextAt(Clip(CurrentControlHint(),100),28,783,10,Muted);
             if(game.User!=null) {
                 TextAt("ENERGY "+(int)(game.User.Fatigue*100)+"% / FOULS "+game.User.Box.Fouls,848,759,10,Muted);
             }

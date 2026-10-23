@@ -9,6 +9,12 @@ if ((Get-FileHash -LiteralPath $portable -Algorithm SHA256).Hash -ne $expected) 
 $gameAssembly = [Reflection.Assembly]::LoadFile($portable)
 if ($null -ne $gameAssembly.GetType('Upcourt.Tests', $false)) { throw 'Test helper found in playable EXE.' }
 if ($null -ne $gameAssembly.GetType('Upcourt.ArcadeTests', $false)) { throw 'Arcade test helper found in playable EXE.' }
+if ($null -ne $gameAssembly.GetType('Upcourt.ControlsAudioTests', $false)) { throw 'Controls/audio test helper found in playable EXE.' }
+foreach ($recording in @('stadium', 'cheer', 'applause', 'groan')) {
+    $audioStream = $gameAssembly.GetManifestResourceStream('Upcourt.Audio.' + $recording + '.wav')
+    if ($null -eq $audioStream) { throw "Missing embedded recording $recording" }
+    try { if ($audioStream.Length -lt 100000) { throw "Incomplete recording $recording" } } finally { $audioStream.Dispose() }
+}
 if ($null -eq $gameAssembly.GetManifestResourceStream('Upcourt.License')) { throw 'License missing from portable game.' }
 $installerAssembly = [Reflection.Assembly]::LoadFile($installer)
 $payload = $installerAssembly.GetManifestResourceStream('Upcourt.Payload')
