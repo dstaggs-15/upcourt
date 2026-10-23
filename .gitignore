@@ -1,0 +1,7 @@
+build/
+*.tmp
+*.previous
+*.user
+.vs/
+TestResults/
+probe.txt

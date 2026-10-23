@@ -1,0 +1,37 @@
+Upocourt basketball implementation, Copyright (c) 2026.
+Original Downfield pixel font and procedural player artwork retained/adapted below.
+
+Downfield original source code, procedural artwork and synthesized sounds
+Copyright (c) 2026. MIT License.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Retro Bowl is a separate game by New Star Games. Downfield is an independent
+implementation with original code, fictional teams, and procedural graphics.
+Research evidence is excluded from this software license; third-party rights
+in referenced material remain with their respective owners.
+
+Third-party crowd recordings retain their CC0 1.0 dedication.
+Stadium Crowd - stomachache: https://freesound.org/s/274516/
+College Football Game - timmyg62: https://freesound.org/s/328623/
+BaseballGameApplause - eeease: https://freesound.org/s/354056/
+Crowd Groans At Bad Joke 01 - ShangusBurger / Shane Vincent:
+https://freesound.org/s/764144/
+CC0 terms: https://creativecommons.org/publicdomain/zero/1.0/
+Retrieved copies and processing: audio/CREDITS.md in the repository.
